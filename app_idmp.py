@@ -44,15 +44,15 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 # Initializing the dash app
 app = dash.Dash(__name__, server=server, external_stylesheets=external_stylesheets)
 
-# df_data = pd.read_csv('data/bcw.csv')
-#
-# df_data[' index'] = range(1, len(df_data) + 1)
+df = pd.read_csv('data/bcw.csv')
+
+df[' index'] = range(1, len(df) + 1)
 
 PAGE_SIZE = 15
 
 
-def parse_contents(contents, filename):
-    content_type, content_string = contents.split(',')
+def parse_contents(content, filename):
+    content_type, content_string = content.split(',')
 
     decoded = base64.b64decode(content_string)
     try:
@@ -85,17 +85,18 @@ def parse_contents(contents, filename):
             page_size=PAGE_SIZE,
             page_action='custom',
             style_table={'overflowX': 'scroll'}
-        ),
-
-        # html.Hr(),  # horizontal line
-        #
-        # # For debugging, display the raw contents provided by the web browser
-        # html.Div('Raw Content'),
-        # html.Pre(contents[0:200] + '...', style={
-        #     'whiteSpace': 'pre-wrap',
-        #     'wordBreak': 'break-all'
-        # })
+        )
     ])
+
+    # html.Hr(),  # horizontal line
+    #
+    # # For debugging, display the raw contents provided by the web browser
+    # html.Div('Raw Content'),
+    # html.Pre(contents[0:200] + '...', style={
+    #     'whiteSpace': 'pre-wrap',
+    #     'wordBreak': 'break-all'
+    # })
+    # ])
 
 
 tab1_content = dbc.Card(
@@ -161,21 +162,21 @@ layout = html.Div([dbc.Tabs(
 app.layout = layout
 
 
-# @app.callback(
-#     Output('datatable-paging', 'data'),
-#     [Input('datatable-paging', "page_current"),
-#      Input('datatable-paging', "page_size")])
-# def update_table(page_current, page_size):
-#     return df.iloc[
-#            page_current * page_size:(page_current + 1) * page_size
-#            ].to_dict('records')
+@app.callback(
+    Output('datatable-paging', 'data'),
+    [Input('datatable-paging', "page_current"),
+     Input('datatable-paging', "page_size")])
+def update_table(page_current, page_size):
+    return df.iloc[
+           page_current * page_size:(page_current + 1) * page_size
+           ].to_dict('records')
 
 
 @app.callback(Output('output-data-upload', 'children'),
               [Input('upload-data', 'contents')],
               [State('upload-data', 'filename'),
                State('upload-data', 'last_modified')])
-def update_output(list_of_contents, list_of_names, list_of_dates):
+def update_output(list_of_contents, list_of_names):
     if list_of_contents is not None:
         children = [
             parse_contents(c, n) for c, n in
