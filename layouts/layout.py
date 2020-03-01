@@ -19,215 +19,217 @@ import plotly.graph_objs as go
 # format of various figures present on the dashboard
 
 # Function to display the layout and formatting of the data tables present in the dash app
-def disp_table(tab_id, dataframe, columns):
+def disp_table(tab_id, dataframe):
     return dash_table.DataTable(
         id=tab_id,
-        columns=columns,
+        # columns=columns,
+        columns=[{"name": i, "id": i} for i in dataframe.columns],
+        data=dataframe.to_dict('records'),
         page_current=0,
-        page_size=18,
+        page_size=20,
         page_action='custom',
 
         sort_action='custom',
         sort_mode='single',
         sort_by=[],
 
-        style_data_conditional=[
-            {'if': {'row_index': 'odd'},
-             'backgroundColor': 'rgb(248, 248, 248)'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Maersk Piper (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Songa Diamond (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Songa Opal (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Songa Topaz (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Proteus (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Pro Onyx (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Stamatia (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Eco Marina del ray (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Castor (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Vessel name',
-                'filter_query': '{Vessel name} eq "Ion M (Scrubber)"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {'column_id': 'HFO Avg'},
-             'backgroundColor': '#F0B27A'},
-            {'if': {'column_id': 'HFO BA'},
-             'backgroundColor': '#F8C471'},
-            {'if': {
-                'column_id': 'Stock Oct',
-                'filter_query': '{Stock Oct} eq "Okay"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Stock Oct',
-                'filter_query': '{Stock Oct} eq "High Stock"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'Stock Nov',
-                'filter_query': '{Stock Nov} eq "Okay"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Stock Nov',
-                'filter_query': '{Stock Nov} eq "High Stock"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'Stock Dec',
-                'filter_query': '{Stock Dec} eq "Okay"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Stock Dec',
-                'filter_query': '{Stock Dec} eq "High Stock"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'Burn Oct',
-                'filter_query': '{Burn Oct} eq "Safe"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Burn Nov',
-                'filter_query': '{Burn Nov} eq "Safe"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Burn Dec',
-                'filter_query': '{Burn Dec} eq "Safe"'},
-                'backgroundColor': '#A6D785'},
+        # style_data_conditional=[
+        #     {'if': {'row_index': 'odd'},
+        #      'backgroundColor': 'rgb(248, 248, 248)'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Maersk Piper (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Songa Diamond (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Songa Opal (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Songa Topaz (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Proteus (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Pro Onyx (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Stamatia (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Eco Marina del ray (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Castor (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Vessel name',
+        #         'filter_query': '{Vessel name} eq "Ion M (Scrubber)"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {'column_id': 'HFO Avg'},
+        #      'backgroundColor': '#F0B27A'},
+        #     {'if': {'column_id': 'HFO BA'},
+        #      'backgroundColor': '#F8C471'},
+        #     {'if': {
+        #         'column_id': 'Stock Oct',
+        #         'filter_query': '{Stock Oct} eq "Okay"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Stock Oct',
+        #         'filter_query': '{Stock Oct} eq "High Stock"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'Stock Nov',
+        #         'filter_query': '{Stock Nov} eq "Okay"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Stock Nov',
+        #         'filter_query': '{Stock Nov} eq "High Stock"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'Stock Dec',
+        #         'filter_query': '{Stock Dec} eq "Okay"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Stock Dec',
+        #         'filter_query': '{Stock Dec} eq "High Stock"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'Burn Oct',
+        #         'filter_query': '{Burn Oct} eq "Safe"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Burn Nov',
+        #         'filter_query': '{Burn Nov} eq "Safe"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Burn Dec',
+        #         'filter_query': '{Burn Dec} eq "Safe"'},
+        #         'backgroundColor': '#A6D785'},
+        #
+        #     #################################################################################
+        #     {'if': {
+        #         'column_id': 'Tank1',
+        #         'filter_query': '{Cleaned1} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Tank1',
+        #         'filter_query': '{Cleaned1} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'Tank2',
+        #         'filter_query': '{Cleaned2} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Tank2',
+        #         'filter_query': '{Cleaned2} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'Tank3',
+        #         'filter_query': '{Cleaned3} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Tank3',
+        #         'filter_query': '{Cleaned3} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'Tank4',
+        #         'filter_query': '{Cleaned4} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Tank4',
+        #         'filter_query': '{Cleaned4} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'Tank5',
+        #         'filter_query': '{Cleaned5} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'Tank5',
+        #         'filter_query': '{Cleaned5} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #
+        #     {'if': {
+        #         'column_id': 'SttTank1',
+        #         'filter_query': '{SttCleaned1} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'SttTank1',
+        #         'filter_query': '{SttCleaned1} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'SttTank2',
+        #         'filter_query': '{SttCleaned2} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'SttTank2',
+        #         'filter_query': '{SttCleaned2} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #
+        #     {'if': {
+        #         'column_id': 'SerTank1',
+        #         'filter_query': '{SerCleaned1} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'SerTank1',
+        #         'filter_query': '{SerCleaned1} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'SerTank2',
+        #         'filter_query': '{SerCleaned2} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'SerTank2',
+        #         'filter_query': '{SerCleaned2} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     {'if': {
+        #         'column_id': 'SerTank3',
+        #         'filter_query': '{SerCleaned3} eq "Yes"'},
+        #         'backgroundColor': '#A6D785'},
+        #     {'if': {
+        #         'column_id': 'SerTank3',
+        #         'filter_query': '{SerCleaned3} eq "No"'},
+        #         'backgroundColor': '#F08080'},
+        #     #################################################################################
+        #
+        #     {'height': '40px',
+        #      'font-size': '18px'}
+        # ],
 
-            #################################################################################
-            {'if': {
-                'column_id': 'Tank1',
-                'filter_query': '{Cleaned1} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Tank1',
-                'filter_query': '{Cleaned1} eq "No"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'Tank2',
-                'filter_query': '{Cleaned2} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Tank2',
-                'filter_query': '{Cleaned2} eq "No"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'Tank3',
-                'filter_query': '{Cleaned3} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Tank3',
-                'filter_query': '{Cleaned3} eq "No"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'Tank4',
-                'filter_query': '{Cleaned4} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Tank4',
-                'filter_query': '{Cleaned4} eq "No"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'Tank5',
-                'filter_query': '{Cleaned5} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'Tank5',
-                'filter_query': '{Cleaned5} eq "No"'},
-                'backgroundColor': '#F08080'},
-
-            {'if': {
-                'column_id': 'SttTank1',
-                'filter_query': '{SttCleaned1} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'SttTank1',
-                'filter_query': '{SttCleaned1} eq "No"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'SttTank2',
-                'filter_query': '{SttCleaned2} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'SttTank2',
-                'filter_query': '{SttCleaned2} eq "No"'},
-                'backgroundColor': '#F08080'},
-
-            {'if': {
-                'column_id': 'SerTank1',
-                'filter_query': '{SerCleaned1} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'SerTank1',
-                'filter_query': '{SerCleaned1} eq "No"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'SerTank2',
-                'filter_query': '{SerCleaned2} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'SerTank2',
-                'filter_query': '{SerCleaned2} eq "No"'},
-                'backgroundColor': '#F08080'},
-            {'if': {
-                'column_id': 'SerTank3',
-                'filter_query': '{SerCleaned3} eq "Yes"'},
-                'backgroundColor': '#A6D785'},
-            {'if': {
-                'column_id': 'SerTank3',
-                'filter_query': '{SerCleaned3} eq "No"'},
-                'backgroundColor': '#F08080'},
-            #################################################################################
-
-            {'height': '40px',
-             'font-size': '18px'}
-        ],
-
-        style_cell_conditional=[
-            {'if': {'column_id': 'Ops Comment'},
-             'minWidth': '250px', 'width': '500px', 'maxWidth': '500px',
-             'whiteSpace': 'normal'}
-        ],
-
-        style_header={'backgroundColor': 'skyblue',
-                      'font-weight': 'bold',
-                      'font-size': '18px',
-                      'height': '40px',
-                      'textAlign': 'center'},
-
-        style_header_conditional=[
-            {'if': {
-                'column_id': 'SttTank1'},
-                'backgroundColor': '#73B1B7'},
-            {'if': {
-                'column_id': 'SttTank2'},
-                'backgroundColor': '#73B1B7'}
-        ],
-
-        merge_duplicate_headers=True,
-
-        style_table={'overflowX': 'scroll'},
+        # style_cell_conditional=[
+        #     {'if': {'column_id': 'Ops Comment'},
+        #      'minWidth': '250px', 'width': '500px', 'maxWidth': '500px',
+        #      'whiteSpace': 'normal'}
+        # ],
+        #
+        # style_header={'backgroundColor': 'skyblue',
+        #               'font-weight': 'bold',
+        #               'font-size': '18px',
+        #               'height': '40px',
+        #               'textAlign': 'center'},
+        #
+        # style_header_conditional=[
+        #     {'if': {
+        #         'column_id': 'SttTank1'},
+        #         'backgroundColor': '#73B1B7'},
+        #     {'if': {
+        #         'column_id': 'SttTank2'},
+        #         'backgroundColor': '#73B1B7'}
+        # ],
+        #
+        # merge_duplicate_headers=True,
+        #
+        # style_table={'overflowX': 'scroll'},
 
         # style_cell_conditional=[
         #     {'if': {'column_id': 'Re-del date'},

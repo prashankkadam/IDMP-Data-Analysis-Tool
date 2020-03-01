@@ -43,17 +43,17 @@ navbar = html.Div([
     )
 ])
 
-# Setting the layout for navs and formatting the CSS layouts
-nav = html.Div([
-    dbc.Nav(
-        [
-            dbc.NavLink("ROB", id="id_rob", href="/apps/rob", style={'min-width': '200px', 'color': 'skyblue'}),
-            dbc.NavLink("Monthly Consumption", id="id_mon", href="/apps/monthly",
-                        style={'min-width': '250px', 'color': 'skyblue'}),
-            # dbc.NavLink("Bunkers", id="id_bun", href="/apps/bunker", style={'min-width': '300px',  'color': 'skyblue'}),
-            # dbc.NavLink("Disabled", disabled=True, href="#", style={'min-width': '200px', 'color': 'skyblue'}),
-        ],
-        id='id_nav'
-    )
-], style={'padding-bottom': '10px', 'padding-left': '50px', 'font-weight': 'bold', 'line-height': '60px',
-          'font-size': '25px'})
+# # Setting the layout for navs and formatting the CSS layouts
+# nav = html.Div([
+#     dbc.Nav(
+#         [
+#             dbc.NavLink("ROB", id="id_rob", href="/apps/rob", style={'min-width': '200px', 'color': 'skyblue'}),
+#             dbc.NavLink("Monthly Consumption", id="id_mon", href="/apps/monthly",
+#                         style={'min-width': '250px', 'color': 'skyblue'}),
+#             # dbc.NavLink("Bunkers", id="id_bun", href="/apps/bunker", style={'min-width': '300px',  'color': 'skyblue'}),
+#             # dbc.NavLink("Disabled", disabled=True, href="#", style={'min-width': '200px', 'color': 'skyblue'}),
+#         ],
+#         id='id_nav'
+#     )
+# ], style={'padding-bottom': '10px', 'padding-left': '50px', 'font-weight': 'bold', 'line-height': '60px',
+#           'font-size': '25px'})

@@ -18,19 +18,10 @@ import pandas as pd
 
 
 # Defining the function that will import the excel sheet
-def import_excel(path, sheet, skip_rows, drop_columns, renamed_columns):
+def import_csv(path):
 
     # Reading the excel file based on the sheet number
-    df = pd.read_excel(path, sheet, skip_rows)
-
-    # Dropping the unwanted rows
-    df = df.drop(columns=drop_columns)
-
-    # Renaming the columns
-    df.columns = renamed_columns
-
-    # Converting all float column formats to integer formats
-    # pd.options.display.float_format = '{:,.0f}'.format
+    df = pd.read_csv(path)
 
     # returning the pre-processed dataframe
     return df
