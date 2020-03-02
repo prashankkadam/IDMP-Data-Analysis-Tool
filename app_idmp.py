@@ -44,59 +44,57 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 # Initializing the dash app
 app = dash.Dash(__name__, server=server, external_stylesheets=external_stylesheets)
 
-df = pd.read_csv('data/bcw.csv')
-
-df[' index'] = range(1, len(df) + 1)
+# df = pd.read_csv('data/bcw.csv')
+#
+# df[' index'] = range(1, len(df) + 1)
 
 PAGE_SIZE = 15
 
+# def parse_contents(contents, filename):
+#     content_type, content_string = contents.split(',')
+#
+#     decoded = base64.b64decode(content_string)
+#     try:
+#         if 'csv' in filename:
+#             # Assume that the user uploaded a CSV file
+#             df = pd.read_csv(
+#                 io.StringIO(decoded.decode('utf-8')))
+#         elif 'xls' in filename:
+#             # Assume that the user uploaded an excel file
+#             df = pd.read_excel(io.BytesIO(decoded))
+#
+#     except Exception as e:
+#         print(e)
+#         return None
+#
+#     return df
 
-def parse_contents(content, filename):
-    content_type, content_string = content.split(',')
+# html.Div([
+#     html.H5(filename),
+#     # html.H6(datetime.datetime.fromtimestamp(date)),
+#
+#     dash_table.DataTable(
+#         id='datatable-paging',
+#         data=df.to_dict('records'),
+#         columns=[
+#             {"name": i, "id": i} for i in sorted(df.columns)
+#         ],
+#         page_current=0,
+#         page_size=PAGE_SIZE,
+#         page_action='custom',
+#         style_table={'overflowX': 'scroll'}
+#     )
+# ])
 
-    decoded = base64.b64decode(content_string)
-    try:
-        if 'csv' in filename:
-            # Assume that the user uploaded a CSV file
-            df = pd.read_csv(
-                io.StringIO(decoded.decode('utf-8')))
-            df[' index'] = range(1, len(df) + 1)
-        elif 'xls' in filename:
-            # Assume that the user uploaded an excel file
-            df = pd.read_excel(io.BytesIO(decoded))
-            df[' index'] = range(1, len(df) + 1)
-    except Exception as e:
-        print(e)
-        return html.Div([
-            'There was an error processing this file.'
-        ])
-
-    return html.Div([
-        html.H5(filename),
-        # html.H6(datetime.datetime.fromtimestamp(date)),
-
-        dash_table.DataTable(
-            id='datatable-paging',
-            data=df.to_dict('records'),
-            columns=[
-                {"name": i, "id": i} for i in sorted(df.columns)
-            ],
-            page_current=0,
-            page_size=PAGE_SIZE,
-            page_action='custom',
-            style_table={'overflowX': 'scroll'}
-        )
-    ])
-
-    # html.Hr(),  # horizontal line
-    #
-    # # For debugging, display the raw contents provided by the web browser
-    # html.Div('Raw Content'),
-    # html.Pre(contents[0:200] + '...', style={
-    #     'whiteSpace': 'pre-wrap',
-    #     'wordBreak': 'break-all'
-    # })
-    # ])
+# html.Hr(),  # horizontal line
+#
+# # For debugging, display the raw contents provided by the web browser
+# html.Div('Raw Content'),
+# html.Pre(contents[0:200] + '...', style={
+#     'whiteSpace': 'pre-wrap',
+#     'wordBreak': 'break-all'
+# })
+# ])
 
 
 tab1_content = dbc.Card(
@@ -120,8 +118,7 @@ tab1_content = dbc.Card(
                 },
                 # Allow multiple files to be uploaded
                 multiple=True
-            ),
-            html.Div(id='output-data-upload'),
+            )
         ]),
         html.Div([
             dash_table.DataTable(
@@ -164,24 +161,34 @@ app.layout = layout
 
 @app.callback(
     Output('datatable-paging', 'data'),
-    [Input('datatable-paging', "page_current"),
+    [Input('upload-data', 'contents'),
+     Input('datatable-paging', "page_current"),
      Input('datatable-paging', "page_size")])
-def update_table(page_current, page_size):
-    return df.iloc[
-           page_current * page_size:(page_current + 1) * page_size
-           ].to_dict('records')
+def update_table(contents, filename, page_current, page_size):
+    if contents is not None:
+        content_type, content_string = contents.split(',')
+        df = pd.read_csv(io.StringIO(base64.b64decode(content_string).decode('utf-8')))
+        df[' index'] = range(1, len(df) + 1)
+        if df is not None:
+            return df.iloc[
+                page_current * page_size:(page_current + 1) * page_size
+                ].to_dict('records')
+        else:
+            return [{}]
+    else:
+        return [{}]
 
 
-@app.callback(Output('output-data-upload', 'children'),
-              [Input('upload-data', 'contents')],
-              [State('upload-data', 'filename'),
-               State('upload-data', 'last_modified')])
-def update_output(list_of_contents, list_of_names):
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n) for c, n in
-            zip(list_of_contents, list_of_names)]
-        return children
+# @app.callback(Output('output-data-upload', 'children'),
+#               [Input('upload-data', 'contents')],
+#               [State('upload-data', 'filename'),
+#                State('upload-data', 'last_modified')])
+# def update_output(list_of_contents, list_of_names):
+#     if list_of_contents is not None:
+#         children = [
+#             parse_contents(c, n) for c, n in
+#             zip(list_of_contents, list_of_names)]
+#         return children
 
 
 if __name__ == '__main__':

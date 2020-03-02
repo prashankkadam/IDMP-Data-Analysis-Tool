@@ -1,32 +1,22 @@
-import dash_html_components as html
-import dash_core_components as dcc
-import dash
-
-import plotly
-import dash_table
-from dash.dependencies import Input, Output, State
-
-import pandas as pd
-import numpy as np
-
-import json
-import datetime
-import operator
-import os
-
 import base64
+import datetime
 import io
 
-app = dash.Dash()
+import dash
+from dash.dependencies import Input, Output, State
+import dash_core_components as dcc
+import dash_html_components as html
+import dash_table
 
-app.scripts.config.serve_locally = True
-app.config['suppress_callback_exceptions'] = True
+import pandas as pd
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 PAGE_SIZE = 15
 
 app.layout = html.Div([
-
-    html.H5("Upload Files"),
     dcc.Upload(
         id='upload-data',
         children=html.Div([
@@ -43,39 +33,14 @@ app.layout = html.Div([
             'textAlign': 'center',
             'margin': '10px'
         },
-        multiple=False),
-    # html.Br(),
-    # html.Button(
-    #     id='propagate-button',
-    #     n_clicks=0,
-    #     children='Propagate Table Data'
-    # ),
-
-    # html.Br(),
-    # html.H5("Filter Column"),
-    # dcc.Dropdown(id='dropdown_table_filterColumn',
-    #              multi=False,
-    #              placeholder='Filter Column'),
-    #
-    # html.Br(),
-    # html.H5("Updated Table"),
-    html.Div(dash_table.DataTable(id='table',
-                                  # data=df.to_dict('records'),
-                                  # columns=[
-                                  #     {"name": i, "id": i} for i in sorted(df.columns)
-                                  # ],
-                                  page_current=0,
-                                  page_size=PAGE_SIZE,
-                                  page_action='custom',
-                                  style_table={'overflowX': 'scroll'}))
-
+        # Allow multiple files to be uploaded
+        multiple=True
+    ),
+    html.Div(id='output-data-upload'),
 ])
 
 
-# Functions
-
-# file upload function
-def parse_contents(contents, filename):
+def parse_contents(contents, filename, date):
     content_type, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
@@ -84,57 +49,67 @@ def parse_contents(contents, filename):
             # Assume that the user uploaded a CSV file
             df = pd.read_csv(
                 io.StringIO(decoded.decode('utf-8')))
+            df[' index'] = range(1, len(df) + 1)
         elif 'xls' in filename:
             # Assume that the user uploaded an excel file
             df = pd.read_excel(io.BytesIO(decoded))
-
+            df[' index'] = range(1, len(df) + 1)
     except Exception as e:
         print(e)
-        return None
+        return html.Div([
+            'There was an error processing this file.'
+        ])
 
-    return df
+    return html.Div([
+        html.H5(filename),
+        html.H6(datetime.datetime.fromtimestamp(date)),
 
+        dash_table.DataTable(
+            id='table',
+            data=df.iloc[
+                 0 * PAGE_SIZE:(0 + 1) * PAGE_SIZE
+                 ].to_dict('records'),
+            columns=[{'name': i, 'id': i} for i in df.columns],
+            page_current=0,
+            page_size=PAGE_SIZE,
+            page_action='custom'
+        ),
 
-# callback table creation
-@app.callback(Output('table', 'data'),
-              [Input('upload-data', 'contents'),
-               Input('upload-data', 'filename'),
-               Input('datatable-paging', "page_current"),
-               Input('datatable-paging', "page_size")
-               ])
-def update_output(contents, filename, page_current, page_size):
-    if contents is not None:
-        df = parse_contents(contents, filename)
-        if df is not None:
-            return df.iloc[
-                   page_current * page_size:(page_current + 1) * page_size
-                   ].to_dict('records')
-        else:
-            return [{}]
-    else:
-        return [{}]
+        html.Hr(),  # horizontal line
 
-
-# # callback update options of filter dropdown
-# # @app.callback(Output('dropdown_table_filterColumn', 'options'),
-# #               [Input('propagate-button', 'n_clicks'),
-# #                Input('table', 'rows')])
-# # def update_filter_column_options(n_clicks_update, tablerows):
-# #     if n_clicks_update < 1:
-# #         print("df empty")
-# #         return []
-# #
-# #     else:
-# #         dff = pd.DataFrame(tablerows)  # <- problem! dff stays empty even though table was uploaded
-# #
-# #         print("updating... dff empty?:", dff.empty)  # result is True, labels stay empty
-# #
-# #         return [{'label': i, 'value': i} for i in sorted(list(dff))]
+        # For debugging, display the raw contents provided by the web browser
+        html.Div('Raw Content'),
+        html.Pre(contents[0:200] + '...', style={
+            'whiteSpace': 'pre-wrap',
+            'wordBreak': 'break-all'
+        })
+    ])
 
 
-app.css.append_css({
-    "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
-})
+@app.callback(Output('output-data-upload', 'children'),
+              [Input('upload-data', 'contents')],
+              [State('upload-data', 'filename'),
+               State('upload-data', 'last_modified')])
+def update_output(list_of_contents, list_of_names, list_of_dates):
+    if list_of_contents is not None:
+        children = [
+            parse_contents(c, n, d) for c, n, d in
+            zip(list_of_contents, list_of_names, list_of_dates)]
+        return children
+
+
+@app.callback(
+    Output('table', 'data'),
+    [Input('table-page-count', "page_current"),
+     Input('table-page-count', "page_size"),
+     Input('upload-data', 'contents')],
+    [State('upload-data', 'filename'),
+     State('upload-data', 'last_modified')])
+def update_table(page_current, page_size):
+    return df.iloc[
+           page_current * page_size:(page_current + 1) * page_size
+           ].to_dict('records')
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
