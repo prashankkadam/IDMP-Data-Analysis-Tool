@@ -44,87 +44,72 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 # Initializing the dash app
 app = dash.Dash(__name__, server=server, external_stylesheets=external_stylesheets)
 
-# df = pd.read_csv('data/bcw.csv')
-#
-# df[' index'] = range(1, len(df) + 1)
+app.config.suppress_callback_exceptions = True
+
+df = pd.read_csv('data/bcw.csv')
+
+df[' index'] = range(1, len(df) + 1)
+
+colnames = df.columns
 
 PAGE_SIZE = 15
 
-# def parse_contents(contents, filename):
-#     content_type, content_string = contents.split(',')
-#
-#     decoded = base64.b64decode(content_string)
-#     try:
-#         if 'csv' in filename:
-#             # Assume that the user uploaded a CSV file
-#             df = pd.read_csv(
-#                 io.StringIO(decoded.decode('utf-8')))
-#         elif 'xls' in filename:
-#             # Assume that the user uploaded an excel file
-#             df = pd.read_excel(io.BytesIO(decoded))
-#
-#     except Exception as e:
-#         print(e)
-#         return None
-#
-#     return df
-
-# html.Div([
-#     html.H5(filename),
-#     # html.H6(datetime.datetime.fromtimestamp(date)),
-#
-#     dash_table.DataTable(
-#         id='datatable-paging',
-#         data=df.to_dict('records'),
-#         columns=[
-#             {"name": i, "id": i} for i in sorted(df.columns)
-#         ],
-#         page_current=0,
-#         page_size=PAGE_SIZE,
-#         page_action='custom',
-#         style_table={'overflowX': 'scroll'}
-#     )
-# ])
-
-# html.Hr(),  # horizontal line
-#
-# # For debugging, display the raw contents provided by the web browser
-# html.Div('Raw Content'),
-# html.Pre(contents[0:200] + '...', style={
-#     'whiteSpace': 'pre-wrap',
-#     'wordBreak': 'break-all'
-# })
-# ])
-
-
 tab1_content = dbc.Card(
     dbc.CardBody([
-        html.Div([
-            dcc.Upload(
-                id='upload-data',
-                children=html.Div([
-                    'Drag and Drop or ',
-                    html.A('Select Files')
-                ]),
-                style={
-                    'width': '100%',
-                    'height': '60px',
-                    'lineHeight': '60px',
-                    'borderWidth': '1px',
-                    'borderStyle': 'dashed',
-                    'borderRadius': '5px',
-                    'textAlign': 'center',
-                    'margin': '10px'
-                },
-                # Allow multiple files to be uploaded
-                multiple=True
-            )
-        ]),
-        html.Div([
-            dash_table.DataTable(
-                id='datatable-paging'
-            )
-        ])
+        # html.Div([
+        # dcc.Upload(
+        #     id='upload-data',
+        #     children=html.Div([
+        #         'Drag and Drop or ',
+        #         html.A('Select Files')
+        #     ]),
+        #         style={
+        #             'width': '100%',
+        #             'height': '60px',
+        #             'lineHeight': '60px',
+        #             'borderWidth': '1px',
+        #             'borderStyle': 'dashed',
+        #             'borderRadius': '5px',
+        #             'textAlign': 'center',
+        #             'margin': '10px'
+        #         },
+        #         # Allow multiple files to be uploaded
+        #         multiple=True
+        #     )
+        # ]),
+        'Select Columns: ',
+        dcc.Dropdown(
+            id='dropdown-select-column',
+            options=[{
+                'label': i,
+                'value': i
+            } for i in colnames.dropna().unique()],
+            multi=True
+        ),
+        html.Br(),
+        dash_table.DataTable(
+            id='datatable',
+            columns=[
+                {"name": i, "id": i} for i in sorted(df.columns)
+            ],
+            page_current=0,
+            page_size=PAGE_SIZE,
+            page_action='custom',
+            style_table={'overflowX': 'scroll'},
+
+            sort_action='custom',
+            sort_mode='single',
+            sort_by=[]
+        ),
+        html.Br(),
+        'Row count: ',
+        dcc.Input(
+            id='datatable-row-count',
+            type='number',
+            min=1,
+            max=100,
+            value=15
+        )
     ]),
     className="mt-3",
 )
@@ -147,11 +132,11 @@ tab3_content = dbc.Card(
 
 layout = html.Div([dbc.Tabs(
     [
-        dbc.Tab(tab1_content, id='tab_rob_1', label="Data Table",
+        dbc.Tab(tab1_content, id='tab_table', label="Data Table",
                 label_style={'font-weight': 'bold', 'font-size': '20px', 'color': 'grey'}),
-        dbc.Tab(tab2_content, id='tab_rob_2', label="Plot",
+        dbc.Tab(tab2_content, id='tab_plot', label="Plot",
                 label_style={'font-weight': 'bold', 'font-size': '20px', 'color': 'grey'}),
-        dbc.Tab(tab3_content, id='tab_rob_3', label="Quantization",
+        dbc.Tab(tab3_content, id='tab_quant', label="Quantization",
                 label_style={'font-weight': 'bold', 'font-size': '20px', 'color': 'grey'})
     ])
 ])
@@ -160,35 +145,39 @@ app.layout = layout
 
 
 @app.callback(
-    Output('datatable-paging', 'data'),
-    [Input('upload-data', 'contents'),
-     Input('datatable-paging', "page_current"),
-     Input('datatable-paging', "page_size")])
-def update_table(contents, filename, page_current, page_size):
-    if contents is not None:
-        content_type, content_string = contents.split(',')
-        df = pd.read_csv(io.StringIO(base64.b64decode(content_string).decode('utf-8')))
-        df[' index'] = range(1, len(df) + 1)
-        if df is not None:
-            return df.iloc[
-                page_current * page_size:(page_current + 1) * page_size
-                ].to_dict('records')
-        else:
-            return [{}]
+    Output('datatable', 'data'),
+    [Input('datatable', "page_current"),
+     Input('datatable', "page_size"),
+     Input('datatable', 'sort_by'),
+     Input('datatable-row-count', 'value'),
+     Input('dropdown-select-column', 'value')])
+def update_table(page_current, page_size, sort_by, row_count_value, selected_cols):
+    if row_count_value is not None:
+        page_size = row_count_value
+
+    if len(sort_by):
+        dff = df.sort_values(
+            sort_by[0]['column_id'],
+            ascending=sort_by[0]['direction'] == 'asc',
+            inplace=False
+        )
     else:
-        return [{}]
+        # No sort is applied
+        dff = df
 
-
-# @app.callback(Output('output-data-upload', 'children'),
-#               [Input('upload-data', 'contents')],
-#               [State('upload-data', 'filename'),
-#                State('upload-data', 'last_modified')])
-# def update_output(list_of_contents, list_of_names):
-#     if list_of_contents is not None:
-#         children = [
-#             parse_contents(c, n) for c, n in
-#             zip(list_of_contents, list_of_names)]
-#         return children
+    if selected_cols is not None:
+        if len(selected_cols) != 0:
+            return dff[selected_cols].iloc[
+                   page_current * page_size:(page_current + 1) * page_size
+                   ].to_dict('records')
+        else:
+            return dff.iloc[
+                   page_current * page_size:(page_current + 1) * page_size
+                   ].to_dict('records')
+    else:
+        return dff.iloc[
+               page_current * page_size:(page_current + 1) * page_size
+               ].to_dict('records')
 
 
 if __name__ == '__main__':
