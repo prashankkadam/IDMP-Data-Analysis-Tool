@@ -58,9 +58,14 @@ numeric_cols = [c for c in colnames if dtype_mapping[c] != 'O']
 catagory_cols = [c for c in colnames if dtype_mapping[c] == 'O']
 
 PAGE_SIZE = 15
+dimensions = ["x", "y", "color", "facet_col", "facet_row"]
+graph_types = ["Scatter", "Bar", "Box", "Heatmap"]
 
 col_options = [dict(label=x, value=x) for x in df.columns]
-dimensions = ["x", "y", "color", "facet_col", "facet_row"]
+num_options = [dict(label=x, value=x) for x in list(set(numeric_cols))]
+cat_options = [dict(label=x, value=x) for x in list(set(catagory_cols))]
+graph_options = [dict(label=x, value=x) for x in graph_types]
+
 
 tab1_content = dbc.Card(
     dbc.CardBody([
@@ -137,107 +142,21 @@ tab1_content = dbc.Card(
     className="mt-3",
 )
 
-# tab2_content = dbc.Card(
-#     dbc.CardBody([
-#         dbc.Row([
-#             dbc.Col([], width="auto", style={"padding": "1%"}),
-#             dbc.Col([
-#                 html.Div('Graph:', style={'color': 'grey', 'fontSize': 18})
-#             ], width="auto", style={"padding": "5px"}),
-#             dbc.Col([
-#                 dcc.Dropdown(
-#                     id='graph-select-dropdown',
-#                     options=[
-#                         {'label': 'Scatter', 'value': 'Sctplt'},
-#                         {'label': 'Bar', 'value': 'Barplt'},
-#                         {'label': 'Box', 'value': 'Linplt'}
-#                     ],
-#                     value='Sctplt'
-#                 )
-#             ], width=1, style={"padding": "5px"}),
-#             dbc.Col([], width="auto", style={"padding": "2%"}),
-#             dbc.Col([
-#                 html.Div('X label:', style={'color': 'grey', 'fontSize': 18})
-#             ], width="auto", style={"padding": "5px"}),
-#             dbc.Col([
-#                 dcc.Dropdown(
-#                     id='xlab-select-dropdown',
-#                     options=[{
-#                         'label': i,
-#                         'value': i
-#                     } for i in list(set(numeric_cols))]
-#                 )
-#             ], width=1, style={"padding": "5px"}),
-#             dbc.Col([], width="auto", style={"padding": "2%"}),
-#             dbc.Col([
-#                 html.Div('Y label:', style={'color': 'grey', 'fontSize': 18})
-#             ], width="auto", style={"padding": "5px"}),
-#             dbc.Col([
-#                 dcc.Dropdown(
-#                     id='ylab-select-dropdown',
-#                     options=[{
-#                         'label': i,
-#                         'value': i
-#                     } for i in list(set(numeric_cols))]
-#                 )
-#             ], width=1, style={"padding": "5px"}),
-#             dbc.Col([], width="auto", style={"padding": "2%"}),
-#             dbc.Col([
-#                 html.Div('Color:', style={'color': 'grey', 'fontSize': 18})
-#             ], width="auto", style={"padding": "5px"}),
-#             dbc.Col([
-#                 dcc.Dropdown(
-#                     id='col-select-dropdown',
-#                     options=[{
-#                         'label': i,
-#                         'value': i
-#                     } for i in list(set(numeric_cols))]
-#                 )
-#             ], width=1, style={"padding": "5px"}),
-#             dbc.Col([], width="auto", style={"padding": "2%"}),
-#             dbc.Col([
-#                 html.Div('Size:', style={'color': 'grey', 'fontSize': 18})
-#             ], width="auto", style={"padding": "5px"}),
-#             dbc.Col([
-#                 dcc.Dropdown(
-#                     id='siz-select-dropdown',
-#                     options=[{
-#                         'label': i,
-#                         'value': i
-#                     } for i in list(set(numeric_cols))]
-#                 )
-#             ], width=1, style={"padding": "5px"}),
-#             dbc.Col([], width="auto", style={"padding": "2%"}),
-#             dbc.Col([
-#                 html.Div('Facet:', style={'color': 'grey', 'fontSize': 18})
-#             ], width="auto", style={"padding": "5px"}),
-#             dbc.Col([
-#                 dcc.Dropdown(
-#                     id='fac-select-dropdown',
-#                     options=[{
-#                         'label': i,
-#                         'value': i
-#                     } for i in list(set(numeric_cols))]
-#                 )
-#             ], width=1, style={"padding": "5px"})
-#         ], no_gutters=True),
-#         dbc.Row([
-#             dcc.Graph(id="plot-graph", style={"width": "75%"})
-#         ]),
-#     ]),
-#     className="mt-3",
-# )
-
 tab2_content = html.Div(
     [
         html.Div(
             [
-                html.P([d + ":", dcc.Dropdown(id=d, options=col_options)])
-                for d in dimensions
+                html.P(["Graph" + ":", dcc.Dropdown(id="graph-select-dropdown", options=graph_options,
+                                                    value="Scatter")]),
+                html.P(["X label" + ":", dcc.Dropdown(id="xlab-select-dropdown", options=col_options)]),
+                html.P(["Y label" + ":", dcc.Dropdown(id="ylab-select-dropdown", options=col_options)]),
+                html.P(["Color" + ":", dcc.Dropdown(id="col-select-dropdown", options=col_options)]),
+                html.P(["Size" + ":", dcc.Dropdown(id="siz-select-dropdown", options=col_options)]),
+                html.P(["Facet" + ":", dcc.Dropdown(id="fac-select-dropdown", options=col_options)]),
             ],
-            style={"width": "25%", "float": "left"},
+            style={"width": "25%", "float": "left", "padding": "20px"},
         ),
-        dcc.Graph(id="graph", style={"width": "75%", "display": "inline-block"}),
+        dcc.Graph(id="plot-graph", style={"width": "75%", "display": "inline-block"}),
     ]
 )
 
@@ -350,30 +269,50 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, sele
                ].to_dict('records')
 
 
-@app.callback(Output("graph", "figure"), [Input(d, "value") for d in dimensions])
-def make_figure(x, y, color, facet_col, facet_row):
-    return px.scatter(
-        df,
-        x=x,
-        y=y,
-        color=color,
-        facet_col=facet_col,
-        facet_row=facet_row,
-        height=700,
-    )
-
-# @app.callback(
-#     Output("plot-graph", "figure"),
-#     [Input("graph-select-dropdown", "value"),
-#      Input("xlab-select-dropdown", "value"),
-#      Input("ylab-select-dropdown", "value"),
-#      Input("col-select-dropdown", "value"),
-#      Input("siz-select-dropdown", "value"),
-#      Input("fac-select-dropdown", "value")])
-# def update_graph(graph, xlab, ylab, color, size, facet):
-#     print(graph, xlab, ylab, color, size, facet)
-#     # if xlab is not None and ylab is not None:
-#     return px.scatter(df, x="radius_mean", y="perimeter_mean")
+@app.callback(Output("plot-graph", "figure"),
+    [Input("graph-select-dropdown", "value"),
+     Input("xlab-select-dropdown", "value"),
+     Input("ylab-select-dropdown", "value"),
+     Input("col-select-dropdown", "value"),
+     Input("siz-select-dropdown", "value"),
+     Input("fac-select-dropdown", "value")])
+def make_figure(graph, xlab, ylab, color, size, facet):
+    if graph == "Scatter" or graph is None:
+        return px.scatter(
+            df,
+            x=xlab,
+            y=ylab,
+            color=color,
+            size=size,
+            facet_col=facet,
+            height=700,
+        )
+    elif graph == "Bar":
+        return px.bar(
+            df,
+            x=xlab,
+            y=ylab,
+            color=color,
+            facet_col=facet,
+            height=700,
+        )
+    elif graph == "Box":
+        return px.box(
+            df,
+            x=xlab,
+            y=ylab,
+            color=color,
+            facet_col=facet,
+            height=700,
+        )
+    elif graph == "Heatmap":
+        return px.density_heatmap(
+            df,
+            x=xlab,
+            y=ylab,
+            facet_col=facet,
+            height=700,
+        )
 
 
 if __name__ == '__main__':

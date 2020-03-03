@@ -120,6 +120,99 @@ import dash
 # if __name__ == '__main__':
 #     app.run_server(debug=True)
 
+#############################################################################################
+# Tab 2 previous layout code
+# tab2_content = dbc.Card(
+#     dbc.CardBody([
+#         dbc.Row([
+#             dbc.Col([], width="auto", style={"padding": "1%"}),
+#             dbc.Col([
+#                 html.Div('Graph:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='graph-select-dropdown',
+#                     options=[
+#                         {'label': 'Scatter', 'value': 'Sctplt'},
+#                         {'label': 'Bar', 'value': 'Barplt'},
+#                         {'label': 'Box', 'value': 'Linplt'}
+#                     ],
+#                     value='Sctplt'
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('X label:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='xlab-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Y label:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='ylab-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Color:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='col-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Size:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='siz-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Facet:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='fac-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"})
+#         ], no_gutters=True),
+#         dbc.Row([
+#             dcc.Graph(id="plot-graph", style={"width": "75%"})
+#         ]),
+#     ]),
+#     className="mt-3",
+# )
+##################################################################################################
 
 import plotly.express as px
 import pandas as pd
