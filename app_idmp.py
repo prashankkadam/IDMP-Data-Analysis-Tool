@@ -51,6 +51,9 @@ df = pd.read_csv('data/bcw.csv')
 df[' index'] = range(1, len(df) + 1)
 
 colnames = df.columns
+dtype_mapping = dict(df.dtypes)
+numeric_cols = [c for c in colnames if dtype_mapping[c] != 'O']
+catagory_cols = [c for c in colnames if dtype_mapping[c] == 'O']
 
 PAGE_SIZE = 15
 
@@ -130,10 +133,90 @@ tab1_content = dbc.Card(
 )
 
 tab2_content = dbc.Card(
-    dbc.CardBody(
-        [
-        ]
-    ),
+    dbc.CardBody([
+        dbc.Row([
+            dbc.Col([], width="auto", style={"padding": "1%"}),
+            dbc.Col([
+                html.Div('Graph:', style={'color': 'grey', 'fontSize': 18})
+            ], width="auto", style={"padding": "5px"}),
+            dbc.Col([
+                dcc.Dropdown(
+                    id='graph-select-dropdown',
+                    options=[
+                        {'label': 'Scatter', 'value': 'Sctplt'},
+                        {'label': 'Bar', 'value': 'Barplt'},
+                        {'label': 'Box', 'value': 'Linplt'}
+                    ],
+                    value='Sctplt'
+                )
+            ], width=1, style={"padding": "5px"}),
+            dbc.Col([], width="auto", style={"padding": "2%"}),
+            dbc.Col([
+                html.Div('X label:', style={'color': 'grey', 'fontSize': 18})
+            ], width="auto", style={"padding": "5px"}),
+            dbc.Col([
+                dcc.Dropdown(
+                    id='xlab-select-dropdown',
+                    options=[{
+                        'label': i,
+                        'value': i
+                    } for i in list(set(numeric_cols))]
+                )
+            ], width=1, style={"padding": "5px"}),
+            dbc.Col([], width="auto", style={"padding": "2%"}),
+            dbc.Col([
+                html.Div('Y label:', style={'color': 'grey', 'fontSize': 18})
+            ], width="auto", style={"padding": "5px"}),
+            dbc.Col([
+                dcc.Dropdown(
+                    id='ylab-select-dropdown',
+                    options=[{
+                        'label': i,
+                        'value': i
+                    } for i in list(set(numeric_cols))]
+                )
+            ], width=1, style={"padding": "5px"}),
+            dbc.Col([], width="auto", style={"padding": "2%"}),
+            dbc.Col([
+                html.Div('Color:', style={'color': 'grey', 'fontSize': 18})
+            ], width="auto", style={"padding": "5px"}),
+            dbc.Col([
+                dcc.Dropdown(
+                    id='col-select-dropdown',
+                    options=[{
+                        'label': i,
+                        'value': i
+                    } for i in list(set(numeric_cols))]
+                )
+            ], width=1, style={"padding": "5px"}),
+            dbc.Col([], width="auto", style={"padding": "2%"}),
+            dbc.Col([
+                html.Div('Size:', style={'color': 'grey', 'fontSize': 18})
+            ], width="auto", style={"padding": "5px"}),
+            dbc.Col([
+                dcc.Dropdown(
+                    id='siz-select-dropdown',
+                    options=[{
+                        'label': i,
+                        'value': i
+                    } for i in list(set(numeric_cols))]
+                )
+            ], width=1, style={"padding": "5px"}),
+            dbc.Col([], width="auto", style={"padding": "2%"}),
+            dbc.Col([
+                html.Div('Facet:', style={'color': 'grey', 'fontSize': 18})
+            ], width="auto", style={"padding": "5px"}),
+            dbc.Col([
+                dcc.Dropdown(
+                    id='fac-select-dropdown',
+                    options=[{
+                        'label': i,
+                        'value': i
+                    } for i in list(set(numeric_cols))]
+                )
+            ], width=1, style={"padding": "5px"})
+        ], no_gutters=True)
+    ]),
     className="mt-3",
 )
 
