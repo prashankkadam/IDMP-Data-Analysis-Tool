@@ -119,3 +119,12 @@ import dash
 
 # if __name__ == '__main__':
 #     app.run_server(debug=True)
+
+
+import plotly.express as px
+import pandas as pd
+from plotly.offline import plot
+
+df = pd.read_csv('data/bcw.csv')
+fig = px.box(df, x="diagnosis", y="texture_mean", color="")
+plot(fig)

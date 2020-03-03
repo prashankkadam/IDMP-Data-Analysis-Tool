@@ -14,6 +14,8 @@ from flask_basicauth import BasicAuth
 from layouts import navs
 from apps import idmp_tool as idmp
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objs as go
 
 # Creating a flask server
 server = Flask(__name__)
@@ -56,6 +58,9 @@ numeric_cols = [c for c in colnames if dtype_mapping[c] != 'O']
 catagory_cols = [c for c in colnames if dtype_mapping[c] == 'O']
 
 PAGE_SIZE = 15
+
+col_options = [dict(label=x, value=x) for x in df.columns]
+dimensions = ["x", "y", "color", "facet_col", "facet_row"]
 
 tab1_content = dbc.Card(
     dbc.CardBody([
@@ -132,92 +137,108 @@ tab1_content = dbc.Card(
     className="mt-3",
 )
 
-tab2_content = dbc.Card(
-    dbc.CardBody([
-        dbc.Row([
-            dbc.Col([], width="auto", style={"padding": "1%"}),
-            dbc.Col([
-                html.Div('Graph:', style={'color': 'grey', 'fontSize': 18})
-            ], width="auto", style={"padding": "5px"}),
-            dbc.Col([
-                dcc.Dropdown(
-                    id='graph-select-dropdown',
-                    options=[
-                        {'label': 'Scatter', 'value': 'Sctplt'},
-                        {'label': 'Bar', 'value': 'Barplt'},
-                        {'label': 'Box', 'value': 'Linplt'}
-                    ],
-                    value='Sctplt'
-                )
-            ], width=1, style={"padding": "5px"}),
-            dbc.Col([], width="auto", style={"padding": "2%"}),
-            dbc.Col([
-                html.Div('X label:', style={'color': 'grey', 'fontSize': 18})
-            ], width="auto", style={"padding": "5px"}),
-            dbc.Col([
-                dcc.Dropdown(
-                    id='xlab-select-dropdown',
-                    options=[{
-                        'label': i,
-                        'value': i
-                    } for i in list(set(numeric_cols))]
-                )
-            ], width=1, style={"padding": "5px"}),
-            dbc.Col([], width="auto", style={"padding": "2%"}),
-            dbc.Col([
-                html.Div('Y label:', style={'color': 'grey', 'fontSize': 18})
-            ], width="auto", style={"padding": "5px"}),
-            dbc.Col([
-                dcc.Dropdown(
-                    id='ylab-select-dropdown',
-                    options=[{
-                        'label': i,
-                        'value': i
-                    } for i in list(set(numeric_cols))]
-                )
-            ], width=1, style={"padding": "5px"}),
-            dbc.Col([], width="auto", style={"padding": "2%"}),
-            dbc.Col([
-                html.Div('Color:', style={'color': 'grey', 'fontSize': 18})
-            ], width="auto", style={"padding": "5px"}),
-            dbc.Col([
-                dcc.Dropdown(
-                    id='col-select-dropdown',
-                    options=[{
-                        'label': i,
-                        'value': i
-                    } for i in list(set(numeric_cols))]
-                )
-            ], width=1, style={"padding": "5px"}),
-            dbc.Col([], width="auto", style={"padding": "2%"}),
-            dbc.Col([
-                html.Div('Size:', style={'color': 'grey', 'fontSize': 18})
-            ], width="auto", style={"padding": "5px"}),
-            dbc.Col([
-                dcc.Dropdown(
-                    id='siz-select-dropdown',
-                    options=[{
-                        'label': i,
-                        'value': i
-                    } for i in list(set(numeric_cols))]
-                )
-            ], width=1, style={"padding": "5px"}),
-            dbc.Col([], width="auto", style={"padding": "2%"}),
-            dbc.Col([
-                html.Div('Facet:', style={'color': 'grey', 'fontSize': 18})
-            ], width="auto", style={"padding": "5px"}),
-            dbc.Col([
-                dcc.Dropdown(
-                    id='fac-select-dropdown',
-                    options=[{
-                        'label': i,
-                        'value': i
-                    } for i in list(set(numeric_cols))]
-                )
-            ], width=1, style={"padding": "5px"})
-        ], no_gutters=True)
-    ]),
-    className="mt-3",
+# tab2_content = dbc.Card(
+#     dbc.CardBody([
+#         dbc.Row([
+#             dbc.Col([], width="auto", style={"padding": "1%"}),
+#             dbc.Col([
+#                 html.Div('Graph:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='graph-select-dropdown',
+#                     options=[
+#                         {'label': 'Scatter', 'value': 'Sctplt'},
+#                         {'label': 'Bar', 'value': 'Barplt'},
+#                         {'label': 'Box', 'value': 'Linplt'}
+#                     ],
+#                     value='Sctplt'
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('X label:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='xlab-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Y label:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='ylab-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Color:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='col-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Size:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='siz-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"}),
+#             dbc.Col([], width="auto", style={"padding": "2%"}),
+#             dbc.Col([
+#                 html.Div('Facet:', style={'color': 'grey', 'fontSize': 18})
+#             ], width="auto", style={"padding": "5px"}),
+#             dbc.Col([
+#                 dcc.Dropdown(
+#                     id='fac-select-dropdown',
+#                     options=[{
+#                         'label': i,
+#                         'value': i
+#                     } for i in list(set(numeric_cols))]
+#                 )
+#             ], width=1, style={"padding": "5px"})
+#         ], no_gutters=True),
+#         dbc.Row([
+#             dcc.Graph(id="plot-graph", style={"width": "75%"})
+#         ]),
+#     ]),
+#     className="mt-3",
+# )
+
+tab2_content = html.Div(
+    [
+        html.Div(
+            [
+                html.P([d + ":", dcc.Dropdown(id=d, options=col_options)])
+                for d in dimensions
+            ],
+            style={"width": "25%", "float": "left"},
+        ),
+        dcc.Graph(id="graph", style={"width": "75%", "display": "inline-block"}),
+    ]
 )
 
 tab3_content = dbc.Card(
@@ -327,6 +348,32 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, sele
         return dff.iloc[
                page_current * page_size:(page_current + 1) * page_size
                ].to_dict('records')
+
+
+@app.callback(Output("graph", "figure"), [Input(d, "value") for d in dimensions])
+def make_figure(x, y, color, facet_col, facet_row):
+    return px.scatter(
+        df,
+        x=x,
+        y=y,
+        color=color,
+        facet_col=facet_col,
+        facet_row=facet_row,
+        height=700,
+    )
+
+# @app.callback(
+#     Output("plot-graph", "figure"),
+#     [Input("graph-select-dropdown", "value"),
+#      Input("xlab-select-dropdown", "value"),
+#      Input("ylab-select-dropdown", "value"),
+#      Input("col-select-dropdown", "value"),
+#      Input("siz-select-dropdown", "value"),
+#      Input("fac-select-dropdown", "value")])
+# def update_graph(graph, xlab, ylab, color, size, facet):
+#     print(graph, xlab, ylab, color, size, facet)
+#     # if xlab is not None and ylab is not None:
+#     return px.scatter(df, x="radius_mean", y="perimeter_mean")
 
 
 if __name__ == '__main__':
