@@ -66,7 +66,6 @@ num_options = [dict(label=x, value=x) for x in list(set(numeric_cols))]
 cat_options = [dict(label=x, value=x) for x in list(set(catagory_cols))]
 graph_options = [dict(label=x, value=x) for x in graph_types]
 
-
 tab1_content = dbc.Card(
     dbc.CardBody([
         # html.Div([
@@ -76,19 +75,19 @@ tab1_content = dbc.Card(
         #         'Drag and Drop or ',
         #         html.A('Select Files')
         #     ]),
-        #         style={
-        #             'width': '100%',
-        #             'height': '60px',
-        #             'lineHeight': '60px',
-        #             'borderWidth': '1px',
-        #             'borderStyle': 'dashed',
-        #             'borderRadius': '5px',
-        #             'textAlign': 'center',
-        #             'margin': '10px'
-        #         },
-        #         # Allow multiple files to be uploaded
-        #         multiple=True
-        #     )
+        #     style={
+        #         'width': '100%',
+        #         'height': '60px',
+        #         'lineHeight': '60px',
+        #         'borderWidth': '1px',
+        #         'borderStyle': 'dashed',
+        #         'borderRadius': '5px',
+        #         'textAlign': 'center',
+        #         'margin': '10px'
+        #     },
+        #     # Allow multiple files to be uploaded
+        #     multiple=True
+        # )
         # ]),
         dbc.Row([
             dbc.Col([
@@ -160,10 +159,55 @@ tab2_content = html.Div(
     ]
 )
 
+hypothesis_tests = ["Normality", "Correlation", "Parametric"]
+normality_tests = ["Shapiro-Wilk", "D’Agostino’s K^2", "Anderson-Darling"]
+correlation_tests = ["Pearson", "Spearman", "Kendall", "Chi-Squared"]
+parametric_tests = ["Student t-test", "Paired Student t-test", "ANOVA", "Repeated ANOVA"]
+
+hypothesis_options = [dict(label=x, value=x) for x in hypothesis_tests]
+normality_options = [dict(label=x, value=x) for x in normality_tests]
+correlation_options = [dict(label=x, value=x) for x in correlation_tests]
+parametric_options = [dict(label=x, value=x) for x in parametric_tests]
+
 tab3_content = dbc.Card(
     dbc.CardBody(
         [
+            html.Div(
+                [
+                    html.Div(
+                        ["Hypotheis Tests" + ":", dcc.Dropdown(id="hypothesis-dropdown",
+                                                               options=hypothesis_options,
+                                                               value="Normality")],
+                        style={'display': 'block'}
+                    ),
+                    html.Br(),
+                    html.Div(
+                        ["Normality Tests" + ":", dcc.Dropdown(id="normality-dropdown",
+                                                               options=normality_options)],
+                        style={'display': 'block'}
+                    ),
+
+                    html.Div(
+                        ["Correlation Tests" + ":", dcc.Dropdown(id="correlation-dropdown",
+                                                                 options=correlation_options)],
+                        style={'display': 'none'}
+                    ),
+                    html.Div(
+                        ["Parametric Tests" + ":", dcc.Dropdown(id="parametric-dropdown",
+                                                                options=parametric_options)],
+                        style={'display': 'none'}
+                    ),
+                    html.Br(),
+                    html.Div(
+                        ["Test Variable" + ":", dcc.Dropdown(id="test-var-dropdown",
+                                                             options=num_options)]
+                    ),
+                ],
+                style={"width": "25%", "float": "left", "padding": "20px"},
+            ),
+            html.Div(id="test-results"),
         ]
+
     ),
     className="mt-3",
 )
@@ -209,7 +253,8 @@ layout = html.Div([dbc.Tabs(
         dbc.Tab(tab2_content, id='tab_plot', label="Plot",
                 label_style={'font-weight': 'bold', 'font-size': '20px', 'color': 'grey'}),
         dbc.Tab(tab3_content, id='tab_quant', label="Quantization",
-                label_style={'font-weight': 'bold', 'font-size': '20px', 'color': 'grey'})
+                label_style={'font-weight': 'bold', 'font-size': '20px', 'color': 'grey'}),
+        html.Div(id='df_json', style={'display': 'none'})
     ])
 ])
 
@@ -270,12 +315,12 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, sele
 
 
 @app.callback(Output("plot-graph", "figure"),
-    [Input("graph-select-dropdown", "value"),
-     Input("xlab-select-dropdown", "value"),
-     Input("ylab-select-dropdown", "value"),
-     Input("col-select-dropdown", "value"),
-     Input("siz-select-dropdown", "value"),
-     Input("fac-select-dropdown", "value")])
+              [Input("graph-select-dropdown", "value"),
+               Input("xlab-select-dropdown", "value"),
+               Input("ylab-select-dropdown", "value"),
+               Input("col-select-dropdown", "value"),
+               Input("siz-select-dropdown", "value"),
+               Input("fac-select-dropdown", "value")])
 def make_figure(graph, xlab, ylab, color, size, facet):
     if graph == "Scatter" or graph is None:
         return px.scatter(
@@ -313,6 +358,36 @@ def make_figure(graph, xlab, ylab, color, size, facet):
             facet_col=facet,
             height=700,
         )
+
+
+@app.callback(
+    Output(component_id="normality-dropdown", component_property='style'),
+    [Input("hypothesis-dropdown", "value")])
+def hide_dropdown(hyp_dd):
+    if hyp_dd == "Normality":
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
+
+
+@app.callback(
+    Output(component_id="correlation-dropdown", component_property='style'),
+    [Input("hypothesis-dropdown", "value")])
+def hide_dropdown(hyp_dd):
+    if hyp_dd == "Correlation":
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
+
+
+@app.callback(
+    Output(component_id="parametric-dropdown", component_property='style'),
+    [Input("hypothesis-dropdown", "value")])
+def hide_dropdown(hyp_dd):
+    if hyp_dd == "Parametric":
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
 
 
 if __name__ == '__main__':
