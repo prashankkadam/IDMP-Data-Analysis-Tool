@@ -169,43 +169,98 @@ normality_options = [dict(label=x, value=x) for x in normality_tests]
 correlation_options = [dict(label=x, value=x) for x in correlation_tests]
 parametric_options = [dict(label=x, value=x) for x in parametric_tests]
 
+tabs_styles = {
+    'height': '44px'
+}
+tab_style = {
+    'borderBottom': '1px solid #d6d6d6',
+    'padding': '6px',
+    'fontWeight': 'bold'
+}
+
+tab_selected_style = {
+    'borderTop': '1px solid #d6d6d6',
+    'borderBottom': '1px solid #d6d6d6',
+    'backgroundColor': '#119DFF',
+    'color': 'white',
+    'padding': '6px'
+}
+
+norm_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.P(
+                    ["Normality Tests" + ":", dcc.Dropdown(id="normality-dropdown",
+                                                           options=normality_options)]),
+                html.P(
+                    ["Test Variable" + ":", dcc.Dropdown(id="test-var1-dropdown",
+                                                         options=num_options)]),
+            ],
+            style={"width": "25%", "float": "left", "padding": "20px"},
+        ),
+        html.Div(id="norm-tab"),
+    ]),
+    className="mt-3",
+)
+
+corr_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.P(
+                    ["Correlation Tests" + ":", dcc.Dropdown(id="correlation-dropdown",
+                                                             options=correlation_options)]),
+                html.P(
+                    ["Test Variable" + ":", dcc.Dropdown(id="test-var2-dropdown",
+                                                         options=num_options)]),
+            ],
+            style={"width": "25%", "float": "left", "padding": "20px"},
+        ),
+        html.Div(id="corr-tab"),
+    ]),
+    className="mt-3",
+)
+
+para_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.P(
+                    ["Parametric Tests" + ":", dcc.Dropdown(id="parametric-dropdown",
+                                                            options=parametric_options)]),
+                html.P(
+                    ["Test Variable" + ":", dcc.Dropdown(id="test-var3-dropdown",
+                                                         options=num_options)]),
+            ],
+            style={"width": "25%", "float": "left", "padding": "20px"},
+        ),
+        html.Div(id="para-tab"),
+    ]),
+    className="mt-3",
+)
+
 tab3_content = dbc.Card(
     dbc.CardBody(
         [
-            html.Div(
-                [
-                    html.Div(
-                        ["Hypotheis Tests" + ":", dcc.Dropdown(id="hypothesis-dropdown",
-                                                               options=hypothesis_options,
-                                                               value="Normality")],
-                        style={'display': 'block'}
-                    ),
-                    html.Br(),
-                    html.Div(
-                        ["Normality Tests" + ":", dcc.Dropdown(id="normality-dropdown",
-                                                               options=normality_options)],
-                        style={'display': 'block'}
-                    ),
-
-                    html.Div(
-                        ["Correlation Tests" + ":", dcc.Dropdown(id="correlation-dropdown",
-                                                                 options=correlation_options)],
-                        style={'display': 'none'}
-                    ),
-                    html.Div(
-                        ["Parametric Tests" + ":", dcc.Dropdown(id="parametric-dropdown",
-                                                                options=parametric_options)],
-                        style={'display': 'none'}
-                    ),
-                    html.Br(),
-                    html.Div(
-                        ["Test Variable" + ":", dcc.Dropdown(id="test-var-dropdown",
-                                                             options=num_options)]
-                    ),
-                ],
-                style={"width": "25%", "float": "left", "padding": "20px"},
-            ),
-            html.Div(id="test-results"),
+            dcc.Tabs(id="tabs-styled-with-inline", value='tab-1', children=[
+                dcc.Tab(children=norm_tab,
+                        label='Normality',
+                        value='tab-1',
+                        style=tab_style,
+                        selected_style=tab_selected_style),
+                dcc.Tab(children=corr_tab,
+                        label='Correlation',
+                        value='tab-2',
+                        style=tab_style,
+                        selected_style=tab_selected_style),
+                dcc.Tab(children=para_tab,
+                        label='Parametric',
+                        value='tab-3',
+                        style=tab_style,
+                        selected_style=tab_selected_style),
+                # dcc.Tab(label='Tab 4', value='tab-4', style=tab_style, selected_style=tab_selected_style),
+            ], style=tabs_styles)
         ]
 
     ),
@@ -358,36 +413,6 @@ def make_figure(graph, xlab, ylab, color, size, facet):
             facet_col=facet,
             height=700,
         )
-
-
-@app.callback(
-    Output(component_id="normality-dropdown", component_property='style'),
-    [Input("hypothesis-dropdown", "value")])
-def hide_dropdown(hyp_dd):
-    if hyp_dd == "Normality":
-        return {'display': 'block'}
-    else:
-        return {'display': 'none'}
-
-
-@app.callback(
-    Output(component_id="correlation-dropdown", component_property='style'),
-    [Input("hypothesis-dropdown", "value")])
-def hide_dropdown(hyp_dd):
-    if hyp_dd == "Correlation":
-        return {'display': 'block'}
-    else:
-        return {'display': 'none'}
-
-
-@app.callback(
-    Output(component_id="parametric-dropdown", component_property='style'),
-    [Input("hypothesis-dropdown", "value")])
-def hide_dropdown(hyp_dd):
-    if hyp_dd == "Parametric":
-        return {'display': 'block'}
-    else:
-        return {'display': 'none'}
 
 
 if __name__ == '__main__':
