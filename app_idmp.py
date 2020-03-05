@@ -62,12 +62,13 @@ nav = html.Div([
 ], style={'padding-bottom': '10px', 'padding-left': '50px', 'font-weight': 'bold', 'line-height': '60px',
           'font-size': '25px'})
 
-app.layout = html.Div([
-    # navs.navbar,
-    nav,
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content')
-])
+
+# app.layout = html.Div([
+# navs.navbar,
+# nav,
+# dcc.Location(id='url', refresh=False),
+# html.Div(id='page-content')
+# ])
 
 
 @app.callback(Output('page-content', 'children'),
@@ -78,7 +79,7 @@ def display_page(pathname):
     elif pathname == '/apps/monthly':
         return scat_tab
     elif pathname == '/apps/bunker':
-        return tab_quant_content
+        return scat_tab
     else:
         return tab_data_content
 
@@ -206,27 +207,28 @@ tab_data_content = dbc.Card(
     className="mt-3",
 )
 
-scat_tab = dbc.Card(
-    dbc.CardBody([
-        html.Div(
-            [
-                html.P(["X label" + ":", dcc.Dropdown(id="xlab-scat", options=col_options)]),
-                html.P(["Y label" + ":", dcc.Dropdown(id="ylab-scat-dropdown", options=col_options)]),
-                html.P(["Color" + ":", dcc.Dropdown(id="col-scat", options=col_options)]),
-                html.P(["Size" + ":", dcc.Dropdown(id="siz-scat", options=col_options)]),
-                html.P(["Facet Row" + ":", dcc.Dropdown(id="fac-scat-row", options=col_options)]),
-                html.P(["Facet Column" + ":", dcc.Dropdown(id="fac-scat-col", options=col_options)]),
-                html.P(["Trendline" + ":", dcc.Dropdown(id="trnd-scat",
-                                                        options=[{'label': 'OLS', 'value': 'ols'},
-                                                                 {'label': 'Lowess', 'value': 'lowess'}])])
-            ],
-            style={"width": "25%", "float": "left", "padding": "20px"},
-        ),
-        dcc.Graph(id="plot-scatter", style={"width": "75%", "display": "inline-block"}),
-    ]),
-    className="mt-3",
-)
-
+# dbc.Card(
+# dbc.CardBody([
+scat_tab = html.Div([
+    html.Div(
+        [
+            html.P(["X label" + ":", dcc.Dropdown(id="xlab-scat", options=col_options)]),
+            html.P(["Y label" + ":", dcc.Dropdown(id="ylab-scat", options=col_options)]),
+            html.P(["Color" + ":", dcc.Dropdown(id="col-scat", options=col_options)]),
+            html.P(["Size" + ":", dcc.Dropdown(id="siz-scat", options=col_options)]),
+            html.P(["Facet Row" + ":", dcc.Dropdown(id="fac-scat-row", options=col_options)]),
+            html.P(["Facet Column" + ":", dcc.Dropdown(id="fac-scat-col", options=col_options)]),
+            html.P(["Trendline" + ":", dcc.Dropdown(id="trnd-scat",
+                                                    options=[{'label': 'OLS', 'value': 'ols'},
+                                                             {'label': 'Lowess', 'value': 'lowess'}])])
+        ],
+        style={"width": "25%", "float": "left", "padding": "20px"},
+    ),
+    dcc.Graph(id="plot-scatter", style={"width": "75%", "display": "inline-block"}),
+])
+#     className="mt-3",
+# )
+#
 bar_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
@@ -246,7 +248,7 @@ bar_tab = dbc.Card(
     ]),
     className="mt-3",
 )
-
+#
 box_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
@@ -263,7 +265,7 @@ box_tab = dbc.Card(
     ]),
     className="mt-3",
 )
-
+#
 heat_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
@@ -311,87 +313,87 @@ heat_tab = dbc.Card(
 #     ),
 #     className="mt-3",
 # )
-
-norm_tab = dbc.Card(
-    dbc.CardBody([
-        html.Div(
-            [
-                html.P(
-                    ["Normality Tests" + ":", dcc.Dropdown(id="normality-dropdown",
-                                                           options=normality_options)]),
-                html.P(
-                    ["Test Variable" + ":", dcc.Dropdown(id="test-var1-dropdown",
-                                                         options=num_options)]),
-            ],
-            style={"width": "25%", "float": "left", "padding": "20px"},
-        ),
-        html.Div(id="norm-tab"),
-    ]),
-    className="mt-3",
-)
-
-corr_tab = dbc.Card(
-    dbc.CardBody([
-        html.Div(
-            [
-                html.P(
-                    ["Correlation Tests" + ":", dcc.Dropdown(id="correlation-dropdown",
-                                                             options=correlation_options)]),
-                html.P(
-                    ["Test Variable" + ":", dcc.Dropdown(id="test-var2-dropdown",
-                                                         options=num_options)]),
-            ],
-            style={"width": "25%", "float": "left", "padding": "20px"},
-        ),
-        html.Div(id="corr-tab"),
-    ]),
-    className="mt-3",
-)
-
-para_tab = dbc.Card(
-    dbc.CardBody([
-        html.Div(
-            [
-                html.P(
-                    ["Parametric Tests" + ":", dcc.Dropdown(id="parametric-dropdown",
-                                                            options=parametric_options)]),
-                html.P(
-                    ["Test Variable" + ":", dcc.Dropdown(id="test-var3-dropdown",
-                                                         options=num_options)]),
-            ],
-            style={"width": "25%", "float": "left", "padding": "20px"},
-        ),
-        html.Div(id="para-tab"),
-    ]),
-    className="mt-3",
-)
-
-tab_quant_content = dbc.Card(
-    dbc.CardBody(
-        [
-            dcc.Tabs(id="tabs-quant", value='tab-norm', children=[
-                dcc.Tab(children=norm_tab,
-                        label='Normality',
-                        value='tab-norm',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                dcc.Tab(children=corr_tab,
-                        label='Correlation',
-                        value='tab-corr',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                dcc.Tab(children=para_tab,
-                        label='Parametric',
-                        value='tab-para',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                # dcc.Tab(label='Tab 4', value='tab-4', style=tab_style, selected_style=tab_selected_style),
-            ], style=tabs_styles)
-        ]
-
-    ),
-    className="mt-3",
-)
+#
+# norm_tab = dbc.Card(
+#     dbc.CardBody([
+#         html.Div(
+#             [
+#                 html.P(
+#                     ["Normality Tests" + ":", dcc.Dropdown(id="normality-dropdown",
+#                                                            options=normality_options)]),
+#                 html.P(
+#                     ["Test Variable" + ":", dcc.Dropdown(id="test-var1-dropdown",
+#                                                          options=num_options)]),
+#             ],
+#             style={"width": "25%", "float": "left", "padding": "20px"},
+#         ),
+#         html.Div(id="norm-tab"),
+#     ]),
+#     className="mt-3",
+# )
+#
+# corr_tab = dbc.Card(
+#     dbc.CardBody([
+#         html.Div(
+#             [
+#                 html.P(
+#                     ["Correlation Tests" + ":", dcc.Dropdown(id="correlation-dropdown",
+#                                                              options=correlation_options)]),
+#                 html.P(
+#                     ["Test Variable" + ":", dcc.Dropdown(id="test-var2-dropdown",
+#                                                          options=num_options)]),
+#             ],
+#             style={"width": "25%", "float": "left", "padding": "20px"},
+#         ),
+#         html.Div(id="corr-tab"),
+#     ]),
+#     className="mt-3",
+# )
+#
+# para_tab = dbc.Card(
+#     dbc.CardBody([
+#         html.Div(
+#             [
+#                 html.P(
+#                     ["Parametric Tests" + ":", dcc.Dropdown(id="parametric-dropdown",
+#                                                             options=parametric_options)]),
+#                 html.P(
+#                     ["Test Variable" + ":", dcc.Dropdown(id="test-var3-dropdown",
+#                                                          options=num_options)]),
+#             ],
+#             style={"width": "25%", "float": "left", "padding": "20px"},
+#         ),
+#         html.Div(id="para-tab"),
+#     ]),
+#     className="mt-3",
+# )
+#
+# tab_quant_content = dbc.Card(
+#     dbc.CardBody(
+#         [
+#             dcc.Tabs(id="tabs-quant", value='tab-norm', children=[
+#                 dcc.Tab(children=norm_tab,
+#                         label='Normality',
+#                         value='tab-norm',
+#                         style=tab_style,
+#                         selected_style=tab_selected_style),
+#                 dcc.Tab(children=corr_tab,
+#                         label='Correlation',
+#                         value='tab-corr',
+#                         style=tab_style,
+#                         selected_style=tab_selected_style),
+#                 dcc.Tab(children=para_tab,
+#                         label='Parametric',
+#                         value='tab-para',
+#                         style=tab_style,
+#                         selected_style=tab_selected_style),
+#                 # dcc.Tab(label='Tab 4', value='tab-4', style=tab_style, selected_style=tab_selected_style),
+#             ], style=tabs_styles)
+#         ]
+#
+#     ),
+#     className="mt-3",
+# )
 
 operators = [['ge ', '>='],
              ['le ', '<='],
@@ -448,8 +450,7 @@ def split_filter_part(filter_part):
 #     ], style=tabs_styles)
 # ])
 
-# app.layout = layout
-
+app.layout = scat_tab
 
 @app.callback(
     Output('datatable', 'data'),
@@ -506,14 +507,15 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value):
            ].to_dict('records')
 
 
-@app.callback(Output("plot-scatter", "figure"),
-              [Input("xlab-scat", "value"),
-               Input("ylab-scat", "value"),
-               Input("col-scat", "value"),
-               Input("siz-scat", "value"),
-               Input("fac-cat-row", "value"),
-               Input("fac-scat-col", "value"),
-               Input("trnd-scat", "value")])
+@app.callback(
+    Output("plot-scatter", "figure"),
+    [Input("xlab-scat", "value"),
+     Input("ylab-scat", "value"),
+     Input("col-scat", "value"),
+     Input("siz-scat", "value"),
+     Input("fac-cat-row", "value"),
+     Input("fac-scat-col", "value"),
+     Input("trnd-scat", "value")])
 def make_figure(xlab, ylab, color, size, facet_row, facet_col, trend):
     return px.scatter(
         df,
