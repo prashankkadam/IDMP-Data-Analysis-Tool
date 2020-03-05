@@ -48,6 +48,41 @@ app = dash.Dash(__name__, server=server, external_stylesheets=external_styleshee
 
 app.config.suppress_callback_exceptions = True
 
+nav = html.Div([
+    dbc.Nav(
+        [
+            dbc.NavLink("ROB", id="id_rob", href="/apps/rob", style={'min-width': '200px', 'color': 'skyblue'}),
+            dbc.NavLink("Monthly Consumption", id="id_mon", href="/apps/monthly",
+                        style={'min-width': '250px', 'color': 'skyblue'}),
+            dbc.NavLink("Bunkers", id="id_bun", href="/apps/bunker", style={'min-width': '300px', 'color': 'skyblue'}),
+            # dbc.NavLink("Disabled", disabled=True, href="#", style={'min-width': '200px', 'color': 'skyblue'}),
+        ],
+        id='id_nav'
+    )
+], style={'padding-bottom': '10px', 'padding-left': '50px', 'font-weight': 'bold', 'line-height': '60px',
+          'font-size': '25px'})
+
+app.layout = html.Div([
+    # navs.navbar,
+    nav,
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+])
+
+
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/apps/rob':
+        return tab_data_content
+    elif pathname == '/apps/monthly':
+        return scat_tab
+    elif pathname == '/apps/bunker':
+        return tab_quant_content
+    else:
+        return tab_data_content
+
+
 df = pd.read_csv('data/bcw.csv')
 
 df[' index'] = range(1, len(df) + 1)
@@ -245,37 +280,37 @@ heat_tab = dbc.Card(
     className="mt-3",
 )
 
-tab_plot_content = dbc.Card(
-    dbc.CardBody(
-        [
-            dcc.Tabs(id="tabs-plot", value='tab-scat', children=[
-                dcc.Tab(children=scat_tab,
-                        label='Scatter',
-                        value='tab-scat',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                dcc.Tab(children=bar_tab,
-                        label='Bar',
-                        value='tab-bar',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                dcc.Tab(children=box_tab,
-                        label='Box',
-                        value='tab-box',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                dcc.Tab(children=heat_tab,
-                        label='Heat Map',
-                        value='tab-heat',
-                        style=tab_style,
-                        selected_style=tab_selected_style),
-                # dcc.Tab(label='Tab 4', value='tab-4', style=tab_style, selected_style=tab_selected_style),
-            ], style=tabs_styles)
-        ]
-
-    ),
-    className="mt-3",
-)
+# tab_plot_content = dbc.Card(
+#     dbc.CardBody(
+#         [
+#             dcc.Tabs(id="tabs-plot", value='tab-scat', children=[
+#                 dcc.Tab(children=scat_tab,
+#                         label='Scatter',
+#                         value='tab-scat',
+#                         style=tab_style,
+#                         selected_style=tab_selected_style),
+#                 dcc.Tab(children=bar_tab,
+#                         label='Bar',
+#                         value='tab-bar',
+#                         style=tab_style,
+#                         selected_style=tab_selected_style),
+#                 dcc.Tab(children=box_tab,
+#                         label='Box',
+#                         value='tab-box',
+#                         style=tab_style,
+#                         selected_style=tab_selected_style),
+#                 dcc.Tab(children=heat_tab,
+#                         label='Heat Map',
+#                         value='tab-heat',
+#                         style=tab_style,
+#                         selected_style=tab_selected_style),
+#                 # dcc.Tab(label='Tab 4', value='tab-4', style=tab_style, selected_style=tab_selected_style),
+#             ], style=tabs_styles)
+#         ]
+#
+#     ),
+#     className="mt-3",
+# )
 
 norm_tab = dbc.Card(
     dbc.CardBody([
@@ -392,28 +427,28 @@ def split_filter_part(filter_part):
     return [None] * 3
 
 
-layout = html.Div([dcc.Tabs(
-    id="tabs-main", value='tab-data', children=[
-        dcc.Tab(children=tab_data_content,
-                label='Data Table',
-                value='tab-data',
-                style=tab_style,
-                selected_style=tab_selected_style),
-        dcc.Tab(children=tab_plot_content,
-                label='Plot',
-                value='tab-plot',
-                style=tab_style,
-                selected_style=tab_selected_style),
-        dcc.Tab(children=tab_quant_content,
-                label='Quantization',
-                value='tab-quant',
-                style=tab_style,
-                selected_style=tab_selected_style),
-        # dcc.Tab(label='Tab 4', value='tab-4', style=tab_style, selected_style=tab_selected_style),
-    ], style=tabs_styles)
-])
+# layout = html.Div([dcc.Tabs(
+#     id="tabs-main", value='tab-data', children=[
+#         dcc.Tab(children=tab_data_content,
+#                 label='Data Table',
+#                 value='tab-data',
+#                 style=tab_style,
+#                 selected_style=tab_selected_style),
+#         dcc.Tab(children=tab_plot_content,
+#                 label='Plot',
+#                 value='tab-plot',
+#                 style=tab_style,
+#                 selected_style=tab_selected_style),
+#         dcc.Tab(children=tab_quant_content,
+#                 label='Quantization',
+#                 value='tab-quant',
+#                 style=tab_style,
+#                 selected_style=tab_selected_style),
+#         # dcc.Tab(label='Tab 4', value='tab-4', style=tab_style, selected_style=tab_selected_style),
+#     ], style=tabs_styles)
+# ])
 
-app.layout = layout
+# app.layout = layout
 
 
 @app.callback(
@@ -492,6 +527,16 @@ def make_figure(xlab, ylab, color, size, facet_row, facet_col, trend):
         height=700
     )
 
+
+# [Input("xlab-scat", "value"),
+#  Input("ylab-scat", "value"),
+#  Input("col-scat", "value"),
+#  Input("siz-scat", "value"),
+#  Input("fac-cat-row", "value"),
+#  Input("fac-scat-col", "value"),
+#  Input("trnd-scat", "value"),
+
+# xlab, ylab, color, size, facet_row, facet_col, trend,
 
 # elif graph == "Bar":
 #     return px.bar(
