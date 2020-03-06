@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 import dash_table
 from dash.dependencies import Input, Output
 import pandas as pd
+from scipy.stats import shapiro, normaltest, anderson, pearsonr, spearmanr, kendalltau, chi2_contingency
 
 # Statmodels installation required for trendline
 
@@ -97,8 +98,8 @@ def display_page(pathname):
         return tab_data_content
     elif pathname == '/apps/plt':
         return tab_plot_content
-    # elif pathname == '/apps/bunker':
-    #     return scat_tab
+    elif pathname == '/apps/qnt':
+        return norm_tab
     else:
         return tab_data_content
 
@@ -294,6 +295,67 @@ tab_plot_content = dbc.Card(
     className="mt-3",
 )
 
+########################################################################################################################
+
+norm_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.P(
+                    ["Normality Tests" + ":", dcc.Dropdown(id="norm-test",
+                                                           options=normality_options)]),
+                html.P(
+                    ["Test Variable" + ":", dcc.Dropdown(id="norm-var",
+                                                         options=num_options)]),
+            ],
+            style={"width": "25%", "float": "left", "padding": "20px"},
+        ),
+        dcc.Graph(id="plot-norm", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
+        html.Table([
+            html.Tr(html.Td(id='norm_val1')),
+            html.Tr(html.Td(id='norm_val2')),
+            html.Tr(html.Td(id='norm_val3')),
+            html.Tr(html.Td(id='norm_val4')),
+            html.Tr(html.Td(id='norm_val5')),
+        ], style={"width": "75%",
+                  "float": "right",
+                  "display": "inline-block",
+                  "padding-left": "75px"})
+    ]),
+    className="mt-3",
+)
+
+corr_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.P(
+                    ["Correlation Tests" + ":", dcc.Dropdown(id="corr-test",
+                                                             options=correlation_options)]),
+                html.P(
+                    ["Test Variable" + ":", dcc.Dropdown(id="corr-var1",
+                                                         options=num_options)]),
+                html.P(
+                    ["Test Variable" + ":", dcc.Dropdown(id="corr-var2",
+                                                         options=num_options)])
+            ],
+            style={"width": "25%", "float": "left", "padding": "20px"},
+        ),
+        dcc.Graph(id="plot-corr", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
+        html.Table([
+            html.Tr(html.Td(id='corr_val1')),
+            html.Tr(html.Td(id='corr_val2')),
+            html.Tr(html.Td(id='corr_val3')),
+            html.Tr(html.Td(id='corr_val4')),
+            html.Tr(html.Td(id='corr_val5')),
+        ], style={"width": "75%",
+                  "float": "right",
+                  "display": "inline-block",
+                  "padding-left": "75px"})
+    ]),
+    className="mt-3",
+)
+
 
 ########################################################################################################################
 
@@ -406,7 +468,7 @@ def update_bar(x, y, color, type, facet_row, facet_col):
      Input("col-box", "value"),
      Input("fac-box-row", "value"),
      Input("fac-box-col", "value")])
-def update_bar(x, y, color, facet_row, facet_col):
+def update_box(x, y, color, facet_row, facet_col):
     return px.box(
         df,
         x=x,
@@ -424,7 +486,7 @@ def update_bar(x, y, color, facet_row, facet_col):
      Input("ylab-heat", "value"),
      Input("fac-heat-row", "value"),
      Input("fac-heat-col", "value")])
-def update_bar(x, y, facet_row, facet_col):
+def update_heatmap(x, y, facet_row, facet_col):
     return px.density_heatmap(
         df,
         x=x,
@@ -435,5 +497,162 @@ def update_bar(x, y, facet_row, facet_col):
     )
 
 
+@app.callback(
+    [Output("plot-norm", "figure"),
+     Output("norm_val1", "children"),
+     Output("norm_val2", "children"),
+     Output("norm_val3", "children"),
+     Output("norm_val4", "children"),
+     Output("norm_val5", "children")],
+    [Input("norm-test", "value"),
+     Input("norm-var", "value")])
+def update_norm(test, var):
+    if test == "Shapiro-Wilk" and var is not None:
+        stat, p = shapiro(df[var])
+        fig = px.histogram(df, x=var, height=500)
+        if p > 0.05:
+            result1 = 'Probably Gaussian : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+        else:
+            result1 = 'Probably not Gaussian : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+
+    elif test == "D’Agostino’s K^2" and var is not None:
+        stat, p = normaltest(df[var])
+        fig = px.histogram(df, x=var, height=500)
+        if p > 0.05:
+            result1 = 'Probably Gaussian : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+        else:
+            result1 = 'Probably not Gaussian : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+
+    elif test == "Anderson-Darling" and var is not None:
+        res = anderson(df[var])
+        fig = px.histogram(df, x=var, height=500)
+
+        if res.statistic < res.critical_values[0]:
+            result1 = 'Probably Gaussian at the %.1f%% level,' % res.significance_level[0]
+        else:
+            result1 = 'Probably not Gaussian at the %.1f%% level,' % res.significance_level[0]
+        if res.statistic < res.critical_values[1]:
+            result2 = 'Probably Gaussian at the %.1f%% level,' % res.significance_level[1]
+        else:
+            result2 = 'Probably not Gaussian at the %.1f%% level,' % res.significance_level[1]
+        if res.statistic < res.critical_values[2]:
+            result3 = 'Probably Gaussian at the %.1f%% level,' % res.significance_level[2]
+        else:
+            result3 = 'Probably not Gaussian at the %.1f%% level,' % res.significance_level[2]
+        if res.statistic < res.critical_values[3]:
+            result4 = 'Probably Gaussian at the %.1f%% level,' % res.significance_level[3]
+        else:
+            result4 = 'Probably not Gaussian at the %.1f%% level,' % res.significance_level[3]
+        if res.statistic < res.critical_values[4]:
+            result5 = 'Probably Gaussian at the %.1f%% level,' % res.significance_level[4]
+        else:
+            result5 = 'Probably not Gaussian at the %.1f%% level,' % res.significance_level[4]
+    return fig, result1, result2, result3, result4, result5
+
+
+@app.callback(
+    [Output("plot-corr", "figure"),
+     Output("corr_val1", "children"),
+     Output("norm_val2", "children"),
+     Output("norm_val3", "children"),
+     Output("norm_val4", "children"),
+     Output("norm_val5", "children")],
+    [Input("norm-test", "value"),
+     Input("norm-var1", "value"),
+     Input("norm-var2", "value")])
+def update_corr(test, var1, var2):
+    if test == "Pearson":
+        stat, p = pearsonr(df[var1], df[var2])
+        fig = px.scatter(df, x=var1, y=var2, height=500)
+        if p > 0.05:
+            result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+        else:
+            result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+
+    elif test == "Spearman":
+        stat, p = spearmanr(df[var1], df[var2])
+        fig = px.scatter(df, x=var1, y=var2, height=500)
+        if p > 0.05:
+            result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+        else:
+            result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+
+    elif test == "Kendall":
+        stat, p = kendalltau(df[var1], df[var2])
+        fig = px.scatter(df, x=var1, y=var2, height=500)
+        if p > 0.05:
+            result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+        else:
+            result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+
+    elif test == "Chi-Squared":
+        stat, p, dof, expected = chi2_contingency(df[var1, var2])
+        fig = px.scatter(df, x=var1, y=var2, height=500)
+        if p > 0.05:
+            result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+        else:
+            result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
+            result2 = ""
+            result3 = ""
+            result4 = ""
+            result5 = ""
+            return fig, result1, result2, result3, result4, result5
+
+
 ########################################################################################################################
-app.run_server(debug=True)
+app.run_server(debug=False)
