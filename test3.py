@@ -99,7 +99,7 @@ def display_page(pathname):
     elif pathname == '/apps/plt':
         return tab_plot_content
     elif pathname == '/apps/qnt':
-        return norm_tab
+        return tab_qnt_content
     else:
         return tab_data_content
 
@@ -343,16 +343,33 @@ corr_tab = dbc.Card(
         ),
         dcc.Graph(id="plot-corr", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
         html.Table([
-            html.Tr(html.Td(id='corr_val1')),
-            html.Tr(html.Td(id='corr_val2')),
-            html.Tr(html.Td(id='corr_val3')),
-            html.Tr(html.Td(id='corr_val4')),
-            html.Tr(html.Td(id='corr_val5')),
+            html.Tr(html.Td(id='corr_val1'))
         ], style={"width": "75%",
                   "float": "right",
                   "display": "inline-block",
                   "padding-left": "75px"})
     ]),
+    className="mt-3",
+)
+
+tab_qnt_content = dbc.Card(
+    dbc.CardBody(
+        [
+            dcc.Tabs(id="tabs-qnt", value='tab-norm', children=[
+                dcc.Tab(children=norm_tab,
+                        label='Normalize',
+                        value='tab-norm',
+                        style=tab_style,
+                        selected_style=tab_selected_style),
+                dcc.Tab(children=corr_tab,
+                        label='Correlation',
+                        value='tab-corr',
+                        style=tab_style,
+                        selected_style=tab_selected_style)
+            ], style=tabs_styles)
+        ]
+
+    ),
     className="mt-3",
 )
 
@@ -572,86 +589,50 @@ def update_norm(test, var):
 
 @app.callback(
     [Output("plot-corr", "figure"),
-     Output("corr_val1", "children"),
-     Output("norm_val2", "children"),
-     Output("norm_val3", "children"),
-     Output("norm_val4", "children"),
-     Output("norm_val5", "children")],
-    [Input("norm-test", "value"),
-     Input("norm-var1", "value"),
-     Input("norm-var2", "value")])
+     Output("corr_val1", "children")],
+    [Input("corr-test", "value"),
+     Input("corr-var1", "value"),
+     Input("corr-var2", "value")])
 def update_corr(test, var1, var2):
     if test == "Pearson":
         stat, p = pearsonr(df[var1], df[var2])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
         else:
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
 
     elif test == "Spearman":
         stat, p = spearmanr(df[var1], df[var2])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
         else:
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
 
     elif test == "Kendall":
         stat, p = kendalltau(df[var1], df[var2])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
         else:
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
 
     elif test == "Chi-Squared":
         stat, p, dof, expected = chi2_contingency(df[var1, var2])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
         else:
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
-            result2 = ""
-            result3 = ""
-            result4 = ""
-            result5 = ""
-            return fig, result1, result2, result3, result4, result5
+            return fig, result1
 
 
 ########################################################################################################################
