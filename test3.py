@@ -1,3 +1,5 @@
+import base64
+
 import plotly.express as px
 import dash
 import dash_html_components as html
@@ -6,7 +8,9 @@ import dash_bootstrap_components as dbc
 import dash_table
 from dash.dependencies import Input, Output
 import pandas as pd
-from scipy.stats import shapiro, normaltest, anderson, pearsonr, spearmanr, kendalltau, chi2_contingency
+from scipy.stats import shapiro, normaltest, anderson, \
+    pearsonr, spearmanr, kendalltau, chi2_contingency, \
+    ttest_ind, ttest_rel, f_oneway
 
 # Statmodels installation required for trendline
 
@@ -20,12 +24,14 @@ numeric_cols = [c for c in colnames if dtype_mapping[c] != 'O']
 catagory_cols = [c for c in colnames if dtype_mapping[c] == 'O']
 
 PAGE_SIZE = 15
+# dsp_yes = {'display': 'initial'}
+# dsp_no = {'display': 'none'}
 dimensions = ["x", "y", "color", "facet_col", "facet_row"]
 graph_types = ["Scatter", "Bar", "Box", "Heatmap"]
 hypothesis_tests = ["Normality", "Correlation", "Parametric"]
 normality_tests = ["Shapiro-Wilk", "D’Agostino’s K^2", "Anderson-Darling"]
 correlation_tests = ["Pearson", "Spearman", "Kendall", "Chi-Squared"]
-parametric_tests = ["Student t-test", "Paired Student t-test", "ANOVA", "Repeated ANOVA"]
+parametric_tests = ["Student t-test", "Paired Student t-test", "ANOVA"]
 
 col_options = [dict(label=x, value=x) for x in df.columns]
 num_options = [dict(label=x, value=x) for x in list(set(numeric_cols))]
@@ -62,6 +68,31 @@ app = dash.Dash(
 
 app.config.suppress_callback_exceptions = True
 
+IDMP_LOGO = 'idmp_logo.png'
+ENCODED_URL = 'data:image/png;base64,{}'
+
+# Encoding the Maersk logo
+logo_enc = base64.b64encode(open(IDMP_LOGO, 'rb').read())
+
+navbar = dbc.Navbar(
+    [
+        html.A(
+            # Use row and col to control vertical alignment of logo / brand
+            dbc.Row(
+                [
+                    dbc.Col(html.Img(src=ENCODED_URL.format(logo_enc.decode()), height="50px")),
+                    dbc.Col(dbc.NavbarBrand("IDMP - Data Analysis Tool", className="ml-2"),
+                            style={'font-weight': 'bold', 'color': 'skyblue'}),
+                ],
+                align="center",
+                no_gutters=True,
+            ),
+            # href="/apps/dat",
+        ),
+        dbc.NavbarToggler(id="navbar-toggler")
+    ],
+)
+
 nav = html.Div([
     dbc.Nav(
         [
@@ -81,10 +112,11 @@ nav = html.Div([
         ],
         id='id_nav'
     )
-], style={'padding-left': '50px', 'font-weight': 'bold', 'line-height': '30px',
+], style={'padding-top': '10px', 'padding-left': '50px', 'font-weight': 'bold', 'line-height': '30px',
           'font-size': '20px'})
 
 app.layout = html.Div([
+    navbar,
     nav,
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
@@ -312,11 +344,11 @@ norm_tab = dbc.Card(
         ),
         dcc.Graph(id="plot-norm", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
         html.Table([
-            html.Tr(html.Td(id='norm_val1')),
-            html.Tr(html.Td(id='norm_val2')),
-            html.Tr(html.Td(id='norm_val3')),
-            html.Tr(html.Td(id='norm_val4')),
-            html.Tr(html.Td(id='norm_val5')),
+            html.Tr(html.Td(id='norm-val1')),
+            html.Tr(html.Td(id='norm-val2')),
+            html.Tr(html.Td(id='norm-val3')),
+            html.Tr(html.Td(id='norm-val4')),
+            html.Tr(html.Td(id='norm-val5')),
         ], style={"width": "75%",
                   "float": "right",
                   "display": "inline-block",
@@ -333,17 +365,48 @@ corr_tab = dbc.Card(
                     ["Correlation Tests" + ":", dcc.Dropdown(id="corr-test",
                                                              options=correlation_options)]),
                 html.P(
-                    ["Test Variable" + ":", dcc.Dropdown(id="corr-var1",
-                                                         options=num_options)]),
+                    ["Test Variable 1" + ":", dcc.Dropdown(id="corr-var1",
+                                                           options=num_options)]),
                 html.P(
-                    ["Test Variable" + ":", dcc.Dropdown(id="corr-var2",
-                                                         options=num_options)])
+                    ["Test Variable 2" + ":", dcc.Dropdown(id="corr-var2",
+                                                           options=num_options)])
             ],
             style={"width": "25%", "float": "left", "padding": "20px"},
         ),
         dcc.Graph(id="plot-corr", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
         html.Table([
-            html.Tr(html.Td(id='corr_val1'))
+            html.Tr(html.Td(id='corr-val1'))
+        ], style={"width": "75%",
+                  "float": "right",
+                  "display": "inline-block",
+                  "padding-left": "75px"})
+    ]),
+    className="mt-3",
+)
+
+para_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.P(
+                    ["Parametric Tests" + ":", dcc.Dropdown(id="para-test",
+                                                            options=parametric_options)]),
+                html.P(
+                    ["Test Variable 1" + ":", dcc.Dropdown(id="para-var1",
+                                                           options=num_options)]),
+                html.P(
+                    ["Test Variable 2" + ":", dcc.Dropdown(id="para-var2",
+                                                           options=num_options)]),
+                # html.P(
+                #     ["Test Variables" + ":", dcc.Dropdown(id="para-var3",
+                #                                           options=num_options,
+                #                                           multi=True)], style={'display': 'none'})
+            ],
+            style={"width": "25%", "float": "left", "padding": "20px"},
+        ),
+        dcc.Graph(id="plot-para", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
+        html.Table([
+            html.Tr(html.Td(id='para-val1'))
         ], style={"width": "75%",
                   "float": "right",
                   "display": "inline-block",
@@ -364,6 +427,11 @@ tab_qnt_content = dbc.Card(
                 dcc.Tab(children=corr_tab,
                         label='Correlation',
                         value='tab-corr',
+                        style=tab_style,
+                        selected_style=tab_selected_style),
+                dcc.Tab(children=para_tab,
+                        label='Parametric',
+                        value='tab-para',
                         style=tab_style,
                         selected_style=tab_selected_style)
             ], style=tabs_styles)
@@ -516,11 +584,11 @@ def update_heatmap(x, y, facet_row, facet_col):
 
 @app.callback(
     [Output("plot-norm", "figure"),
-     Output("norm_val1", "children"),
-     Output("norm_val2", "children"),
-     Output("norm_val3", "children"),
-     Output("norm_val4", "children"),
-     Output("norm_val5", "children")],
+     Output("norm-val1", "children"),
+     Output("norm-val2", "children"),
+     Output("norm-val3", "children"),
+     Output("norm-val4", "children"),
+     Output("norm-val5", "children")],
     [Input("norm-test", "value"),
      Input("norm-var", "value")])
 def update_norm(test, var):
@@ -589,12 +657,12 @@ def update_norm(test, var):
 
 @app.callback(
     [Output("plot-corr", "figure"),
-     Output("corr_val1", "children")],
+     Output("corr-val1", "children")],
     [Input("corr-test", "value"),
      Input("corr-var1", "value"),
      Input("corr-var2", "value")])
 def update_corr(test, var1, var2):
-    if test == "Pearson":
+    if test == "Pearson" and var1 is not None and var2 is not None:
         stat, p = pearsonr(df[var1], df[var2])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
@@ -604,7 +672,7 @@ def update_corr(test, var1, var2):
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
 
-    elif test == "Spearman":
+    elif test == "Spearman" and var1 is not None and var2 is not None:
         stat, p = spearmanr(df[var1], df[var2])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
@@ -614,7 +682,7 @@ def update_corr(test, var1, var2):
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
 
-    elif test == "Kendall":
+    elif test == "Kendall" and var1 is not None and var2 is not None:
         stat, p = kendalltau(df[var1], df[var2])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
@@ -624,8 +692,8 @@ def update_corr(test, var1, var2):
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
 
-    elif test == "Chi-Squared":
-        stat, p, dof, expected = chi2_contingency(df[var1, var2])
+    elif test == "Chi-Squared" and var1 is not None and var2 is not None:
+        stat, p, dof, expected = chi2_contingency(df[[var1, var2]])
         fig = px.scatter(df, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
@@ -636,4 +704,62 @@ def update_corr(test, var1, var2):
 
 
 ########################################################################################################################
-app.run_server(debug=False)
+
+
+# @app.callback(
+#     [Output("para-var1", "style"),
+#      Output("para-var2", "style"),
+#      Output("para-var3", "style")],
+#     [Input("para-test", "value")])
+# def update_display_setting(tab_val):
+#     if tab_val == "Student t-test":
+#         return dsp_yes, dsp_yes, dsp_no
+#     elif tab_val == "Paired Student t-test":
+#         return dsp_yes, dsp_yes, dsp_no
+#     elif tab_val == "ANOVA":
+#         return dsp_no, dsp_no, dsp_yes
+
+
+@app.callback(
+    [Output("plot-para", "figure"),
+     Output("para-val1", "children")],
+    [Input("para-test", "value"),
+     Input("para-var1", "value"),
+     Input("para-var2", "value")])
+def update_para(test, var1, var2):
+    if test == "Student t-test" and var1 is not None and var2 is not None:
+        stat, p = ttest_ind(df[var1], df[var2])
+        df_sub = df[[' index', var1, var2]]
+        df_melt = pd.melt(df_sub, id_vars=' index')
+        fig = px.histogram(df_melt, x='value', color='variable', height=500)
+        if p > 0.05:
+            result1 = 'Probably the same distribution : stat=%.3f, p=%.3f' % (stat, p)
+            return fig, result1
+        else:
+            result1 = 'Probably different distributions : stat=%.3f, p=%.3f' % (stat, p)
+            return fig, result1
+    elif test == "Paired Student t-test" and var1 is not None and var2 is not None:
+        stat, p = ttest_rel(df[var1], df[var2])
+        df_sub = df[[' index', var1, var2]]
+        df_melt = pd.melt(df_sub, id_vars=' index')
+        fig = px.histogram(df_melt, x='value', color='variable', height=500)
+        if p > 0.05:
+            result1 = 'Probably the same distribution : stat=%.3f, p=%.3f' % (stat, p)
+            return fig, result1
+        else:
+            result1 = 'Probably different distributions : stat=%.3f, p=%.3f' % (stat, p)
+            return fig, result1
+    elif test == "ANOVA" and var1 is not None and var2 is not None:
+        stat, p = f_oneway(df[var1], df[var2])
+        df_sub = df[[' index', var1, var2]]
+        df_melt = pd.melt(df_sub, id_vars=' index')
+        fig = px.histogram(df_melt, x='value', color='variable', height=500)
+        if p > 0.05:
+            result1 = 'Probably the same distribution : stat=%.3f, p=%.3f' % (stat, p)
+            return fig, result1
+        else:
+            result1 = 'Probably different distributions : stat=%.3f, p=%.3f' % (stat, p)
+            return fig, result1
+
+
+app.run_server(debug=True)

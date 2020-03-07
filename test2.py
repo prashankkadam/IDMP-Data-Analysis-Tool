@@ -8,7 +8,34 @@ import dash
 # import dash_html_components as html
 # import dash_table
 #
-# import pandas as pd
+import pandas as pd
+import plotly.express as px
+from plotly.offline import plot
+
+df = pd.read_csv('data/bcw.csv')
+df[' index'] = range(1, len(df) + 1)
+
+df_sub = df[[' index', 'radius_mean', 'perimeter_mean']]
+
+list_f = [df_sub['radius_mean'].to_list(), df_sub['perimeter_mean'].to_list()]
+
+print(list_f)
+
+# print(df_sub)
+
+# final = pd.melt(df_sub, id_vars=' index')
+
+# df_stack = df_sub.stack()
+#
+# df_stack.columns = ["var1", "var2"]
+
+# fig = px.histogram(final, x='value', color='variable')
+#
+# print(df_stack[0])
+# print(df_stack[1])
+
+# plot(fig)
+
 #
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #
