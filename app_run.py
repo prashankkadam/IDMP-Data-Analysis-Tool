@@ -1,5 +1,4 @@
 import base64
-import io
 
 import plotly.express as px
 import dash
@@ -7,14 +6,14 @@ import dash_html_components as html
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_table
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 import pandas as pd
 from scipy.stats import shapiro, normaltest, anderson, \
     pearsonr, spearmanr, kendalltau, chi2_contingency, \
     ttest_ind, ttest_rel, f_oneway
 
 # Statmodels installation required for trendline
-df_up = pd.DataFrame()
+
 df = pd.read_csv('data/bcw.csv')
 
 df[' index'] = range(1, len(df) + 1)
@@ -140,29 +139,27 @@ def display_page(pathname):
 ########################################################################################################################
 tab_data_content = dbc.Card(
     dbc.CardBody([
-        html.Div([
-            # dcc.Upload(
-            #     id='upload-data',
-            #     children=html.Div([
-            #         'Drag and Drop or ',
-            #         html.A('Select Files')
-            #     ]),
-            #     style={
-            #         'width': '100%',
-            #         'height': '60px',
-            #         'lineHeight': '60px',
-            #         'borderWidth': '1px',
-            #         'borderStyle': 'dashed',
-            #         'borderRadius': '5px',
-            #         'textAlign': 'center',
-            #         'margin': '10px'
-            #     },
-            #     # Allow multiple files to be uploaded
-            #     multiple=True
-            # ),
-            dbc.Input(id="input-url", placeholder="Enter data URL", type="text"),
-            html.Div(id='no-data', style={'display': 'none'})
-        ]),
+        # html.Div([
+        # dcc.Upload(
+        #     id='upload-data',
+        #     children=html.Div([
+        #         'Drag and Drop or ',
+        #         html.A('Select Files')
+        #     ]),
+        #     style={
+        #         'width': '100%',
+        #         'height': '60px',
+        #         'lineHeight': '60px',
+        #         'borderWidth': '1px',
+        #         'borderStyle': 'dashed',
+        #         'borderRadius': '5px',
+        #         'textAlign': 'center',
+        #         'margin': '10px'
+        #     },
+        #     # Allow multiple files to be uploaded
+        #     multiple=True
+        # )
+        # ]),
         dash_table.DataTable(
             id='datatable',
             columns=[
@@ -449,44 +446,25 @@ tab_qnt_content = dbc.Card(
 
 
 @app.callback(
-    Output("no-data", "children"),
-    [Input("input-url", "value")])
-def output_text(value):
-    if value is not None:
-        global df_up
-        df_up = pd.read_csv(value)
-        return df_up.to_json(date_format='iso', orient='split')
-
-
-@app.callback(
-    [Output('datatable', 'data'),
-     Output('datatable', 'columns')],
+    Output('datatable', 'data'),
     [Input('datatable', "page_current"),
      Input('datatable', "page_size"),
      Input('datatable', 'sort_by'),
      Input('datatable', "filter_query"),
      Input('datatable-row-count', 'value')])
 def update_table(page_current, page_size, sort_by, filter, row_count_value):
-    if df_up is not None:
-        # df_tab = pd.read_json(data, orient='split')
-        df_tab = df_up
-        tab_cols = df_tab.columns
-    else:
-        df_tab = df
-        tab_cols = df.columns
-
     if row_count_value is not None:
         page_size = row_count_value
 
     if len(sort_by):
-        dff = df_tab.sort_values(
+        dff = df.sort_values(
             sort_by[0]['column_id'],
             ascending=sort_by[0]['direction'] == 'asc',
             inplace=False
         )
     else:
         # No sort is applied
-        dff = df_tab
+        dff = df
 
     if filter is not None:
         filtering_expressions = filter.split(' && ')
@@ -519,7 +497,7 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value):
 
     return dff.iloc[
            page_current * page_size:(page_current + 1) * page_size
-           ].to_dict('records'), [{"name": i, "id": i} for i in sorted(tab_cols)]
+           ].to_dict('records')
 
 
 ########################################################################################################################
