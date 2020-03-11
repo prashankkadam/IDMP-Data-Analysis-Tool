@@ -19,7 +19,7 @@ df_sub = df[[' index', 'radius_mean', 'perimeter_mean']]
 
 list_f = [df_sub['radius_mean'].to_list(), df_sub['perimeter_mean'].to_list()]
 
-print(list_f)
+# print(list_f)
 
 # print(df_sub)
 
@@ -263,7 +263,6 @@ print(list_f)
 #
 
 
-
 # def create_callback(output):
 #     def callback(input_value):
 #         input_value = input_value.lower()
@@ -320,6 +319,9 @@ print(list_f)
 #         return {'display': 'none'}
 
 
-
 # if __name__ == '__main__':
 #     app.run_server(debug=True)
+
+str = "https://gist.githubusercontent.com/noamross//b999fb4425b54c63cab088c0ce2c0d6ce961a563/cars.csv"
+
+print(str.split('/')[-1].split('.')[0])
