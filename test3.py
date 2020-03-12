@@ -538,6 +538,25 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, data
 
 
 ########################################################################################################################
+# @app.callback(
+#     [Output("xlab-scat", "options"),
+#      Output("ylab-scat", "options"),
+#      Output("col-scat", "options"),
+#      Output("siz-scat", "options"),
+#      Output("fac-scat-row", "options"),
+#      Output("fac-scat-col", "options")],
+#     [Input("xlab-scat", "value")])      #################################################
+# def update_scat_dd(data):
+#     if not df_up.empty:
+#         xlab_options = [dict(label=x, value=x) for x in df_up.columns]
+#         ylab_options = [dict(label=x, value=x) for x in df_up.columns]
+#         color_options = [dict(label=x, value=x) for x in df_up.columns]
+#         siz_options = [dict(label=x, value=x) for x in df_up.columns]
+#         fac_row_options = [dict(label=x, value=x) for x in df_up.columns]
+#         fac_col_options = [dict(label=x, value=x) for x in df_up.columns]
+#
+#         return [xlab_options, ylab_options, color_options,
+#                 siz_options, fac_row_options, fac_col_options]
 
 
 @app.callback(
