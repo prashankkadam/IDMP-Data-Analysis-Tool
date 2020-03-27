@@ -45,6 +45,8 @@ normality_options = [dict(label=x, value=x) for x in normality_tests]
 correlation_options = [dict(label=x, value=x) for x in correlation_tests]
 parametric_options = [dict(label=x, value=x) for x in parametric_tests]
 
+upd_scat_x = 0
+
 tabs_styles = {
     'height': '44px'
 }
@@ -240,6 +242,12 @@ scat_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
             [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-plt",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
                 html.P(["X label" + ":", dcc.Dropdown(id="xlab-scat", options=col_options)]),
                 html.P(["Y label" + ":", dcc.Dropdown(id="ylab-scat", options=col_options)]),
                 html.P(["Color" + ":", dcc.Dropdown(id="col-scat", options=col_options)]),
@@ -335,7 +343,8 @@ tab_plot_content = dbc.Card(
                         value='tab-heat',
                         style=tab_style,
                         selected_style=tab_selected_style)
-            ], style=tabs_styles)
+            ], style=tabs_styles),
+            html.Div(id='no-data-plt', children=colnames, style={'display': 'none'})
         ]
 
     ),
@@ -471,6 +480,9 @@ def output_text(value, n):
         df_up = pd.read_csv(value)
         df_up.insert(loc=0, column=' index', value=range(1, len(df_up) + 1))
         # data_name = value.split('/')[-1].split('.')[0]
+        if not df_up.empty:
+            global colnames
+            colnames = df_up.columns
         return df_up.to_json(date_format='iso', orient='split')
 
 
@@ -558,6 +570,16 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, data
 #         return [xlab_options, ylab_options, color_options,
 #                 siz_options, fac_row_options, fac_col_options]
 
+# html.P(["X label" + ":", dcc.Dropdown(id="xlab-scat", options=col_options)]),
+#                 html.P(["Y label" + ":", dcc.Dropdown(id="ylab-scat", options=col_options)]),
+#                 html.P(["Color" + ":", dcc.Dropdown(id="col-scat", options=col_options)]),
+#                 html.P(["Size" + ":", dcc.Dropdown(id="siz-scat", options=col_options)]),
+#                 html.P(["Facet Row" + ":", dcc.Dropdown(id="fac-scat-row", options=col_options)]),
+#                 html.P(["Facet Column" + ":", dcc.Dropdown(id="fac-scat-col", options=col_options)]),
+#                 html.P(["Trendline" + ":", dcc.Dropdown(id="trnd-scat",
+
+########################################################################################################################
+
 
 @app.callback(
     Output("plot-scatter", "figure"),
@@ -569,17 +591,74 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, data
      Input("fac-scat-col", "value"),
      Input("trnd-scat", "value")])
 def update_scatter(x, y, color, size, facet_row, facet_col, trend):
-    return px.scatter(
-        df,
-        x=x,
-        y=y,
-        color=color,
-        size=size,
-        facet_row=facet_row,
-        facet_col=facet_col,
-        trendline=trend,
-        height=700,
-    )
+    if df_up.empty:
+        return px.scatter(
+            df,
+            x=x,
+            y=y,
+            color=color,
+            size=size,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            trendline=trend,
+            height=700)
+    elif not df_up.empty:
+        return px.scatter(
+            df_up,
+            x=x,
+            y=y,
+            color=color,
+            size=size,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            trendline=trend,
+            height=700)
+
+
+@app.callback(
+    [Output('xlab-scat', 'options'),
+     Output('ylab-scat', 'options'),
+     Output('col-scat', 'options'),
+     Output('siz-scat', 'options'),
+     Output('fac-scat-row', 'options'),
+     Output('fac-scat-col', 'options')],
+    [Input('load-button-plt', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames]]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],]
+
+# @app.callback(
+#     Output('no-data-plt', 'children'),
+#     [Input('url', 'pathname')])
+# def update_hidden_div(url_path):
+#     if url_path == '/apps/plt':
+#         return colnames
+#
+#
+# @app.callback(
+#     Output('xlab-scat', 'options'),
+#     [Input('no-data-plt', 'children')])
+# def update_scat_x_dropdown(col_names):
+#     if df_up.empty:
+#         options = [{'label': i, 'value': i} for i in colnames]
+#         return {'options': options}
+#     elif not df_up.empty:
+#         options = [{'label': i, 'value': i} for i in colnames]
+#         return {'options': options}
+
+########################################################################################################################
 
 
 @app.callback(
