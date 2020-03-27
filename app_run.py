@@ -1,4 +1,5 @@
 import base64
+import io
 
 import plotly.express as px
 import dash
@@ -6,14 +7,15 @@ import dash_html_components as html
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_table
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import pandas as pd
 from scipy.stats import shapiro, normaltest, anderson, \
     pearsonr, spearmanr, kendalltau, chi2_contingency, \
     ttest_ind, ttest_rel, f_oneway
 
 # Statmodels installation required for trendline
-
+data_name = ""
+df_up = pd.DataFrame()
 df = pd.read_csv('data/bcw.csv')
 
 df[' index'] = range(1, len(df) + 1)
@@ -23,7 +25,7 @@ dtype_mapping = dict(df.dtypes)
 numeric_cols = [c for c in colnames if dtype_mapping[c] != 'O']
 catagory_cols = [c for c in colnames if dtype_mapping[c] == 'O']
 
-PAGE_SIZE = 15
+PAGE_SIZE = 10
 # dsp_yes = {'display': 'initial'}
 # dsp_no = {'display': 'none'}
 dimensions = ["x", "y", "color", "facet_col", "facet_row"]
@@ -55,7 +57,7 @@ tab_style = {
 tab_selected_style = {
     'borderTop': '1px solid #d6d6d6',
     'borderBottom': '1px solid #d6d6d6',
-    'backgroundColor': 'skyblue',
+    'backgroundColor': '#17a2b8',
     'color': 'white',
     'padding': '6px'
 }
@@ -82,7 +84,7 @@ navbar = dbc.Navbar(
                 [
                     dbc.Col(html.Img(src=ENCODED_URL.format(logo_enc.decode()), height="50px")),
                     dbc.Col(dbc.NavbarBrand("IDMP - Data Analysis Tool", className="ml-2"),
-                            style={'font-weight': 'bold', 'color': 'skyblue'}),
+                            style={'font-weight': 'bold', 'color': '#17a2b8'}),
                 ],
                 align="center",
                 no_gutters=True,
@@ -99,15 +101,15 @@ nav = html.Div([
             dbc.NavLink("Data Table",
                         id="id_dat",
                         href="/apps/dat",
-                        style={'min-width': '200px', 'color': 'skyblue'}),
+                        style={'min-width': '200px', 'color': '#17a2b8'}),
             dbc.NavLink("Plot",
                         id="id_plt",
                         href="/apps/plt",
-                        style={'min-width': '200px', 'color': 'skyblue'}),
+                        style={'min-width': '150px', 'color': '#17a2b8'}),
             dbc.NavLink("Quantization",
                         id="id_qnt",
                         href="/apps/qnt",
-                        style={'min-width': '200px', 'color': 'skyblue'}),
+                        style={'min-width': '200px', 'color': '#17a2b8'}),
             # dbc.NavLink("Disabled", disabled=True, href="#", style={'min-width': '200px', 'color': 'skyblue'}),
         ],
         id='id_nav'
@@ -139,27 +141,38 @@ def display_page(pathname):
 ########################################################################################################################
 tab_data_content = dbc.Card(
     dbc.CardBody([
-        # html.Div([
-        # dcc.Upload(
-        #     id='upload-data',
-        #     children=html.Div([
-        #         'Drag and Drop or ',
-        #         html.A('Select Files')
-        #     ]),
-        #     style={
-        #         'width': '100%',
-        #         'height': '60px',
-        #         'lineHeight': '60px',
-        #         'borderWidth': '1px',
-        #         'borderStyle': 'dashed',
-        #         'borderRadius': '5px',
-        #         'textAlign': 'center',
-        #         'margin': '10px'
-        #     },
-        #     # Allow multiple files to be uploaded
-        #     multiple=True
-        # )
-        # ]),
+        html.Div([
+            # dcc.Upload(
+            #     id='upload-data',
+            #     children=html.Div([
+            #         'Drag and Drop or ',
+            #         html.A('Select Files')
+            #     ]),
+            #     style={
+            #         'width': '100%',
+            #         'height': '60px',
+            #         'lineHeight': '60px',
+            #         'borderWidth': '1px',
+            #         'borderStyle': 'dashed',
+            #         'borderRadius': '5px',
+            #         'textAlign': 'center',
+            #         'margin': '10px'
+            #     },
+            #     # Allow multiple files to be uploaded
+            #     multiple=True
+            # ),
+            html.Div([
+                html.P([dbc.Input(id="input-url", placeholder="Enter data URL", type="text")])
+            ], style={"width": "89%", "float": "left"}),
+            dbc.Button("Load",
+                       id="load-button",
+                       color="info",
+                       className="mr-2",
+                       style={"width": "10%",
+                              "display": "inline-block"}),
+            html.H2(id='data-name', style={"width": "99%", "float": "left"}),
+            html.Div(id='no-data', style={'display': 'none'})
+        ]),
         dash_table.DataTable(
             id='datatable',
             columns=[
@@ -180,7 +193,7 @@ tab_data_content = dbc.Card(
         html.Br(),
         html.P(["Row Count" + ":", dcc.Input(id="datatable-row-count",
                                              type='number',
-                                             value=15)],
+                                             value=10)],
                style={"display": "inline-block", 'fontSize': 12}),
     ]),
     className="mt-3",
@@ -446,25 +459,49 @@ tab_qnt_content = dbc.Card(
 
 
 @app.callback(
-    Output('datatable', 'data'),
+    Output("no-data", "children"),
+    [Input("input-url", "value"),
+     Input("load-button", "n_clicks")])
+def output_text(value, n):
+    if value is not None and n is not None:
+        global df_up
+        # global data_name
+        df_up = pd.read_csv(value)
+        df_up[' index'] = range(1, len(df_up) + 1)
+        # data_name = value.split('/')[-1].split('.')[0]
+        return df_up.to_json(date_format='iso', orient='split')
+
+
+@app.callback(
+    [Output('datatable', 'data'),
+     Output('datatable', 'columns')],
     [Input('datatable', "page_current"),
      Input('datatable', "page_size"),
      Input('datatable', 'sort_by'),
      Input('datatable', "filter_query"),
-     Input('datatable-row-count', 'value')])
-def update_table(page_current, page_size, sort_by, filter, row_count_value):
+     Input('datatable-row-count', 'value'),
+     Input('no-data', 'children')])
+def update_table(page_current, page_size, sort_by, filter, row_count_value, data):
+    if not df_up.empty:
+        # df_temp = pd.read_json(data, orient='split')
+        df_tab = df_up
+        tab_cols = df_tab.columns
+    else:
+        df_tab = df
+        tab_cols = df.columns
+
     if row_count_value is not None:
         page_size = row_count_value
 
     if len(sort_by):
-        dff = df.sort_values(
+        dff = df_tab.sort_values(
             sort_by[0]['column_id'],
             ascending=sort_by[0]['direction'] == 'asc',
             inplace=False
         )
     else:
         # No sort is applied
-        dff = df
+        dff = df_tab
 
     if filter is not None:
         filtering_expressions = filter.split(' && ')
@@ -495,12 +532,31 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value):
 
     dff = dff.round(2)
 
-    return dff.iloc[
+    return [dff.iloc[
            page_current * page_size:(page_current + 1) * page_size
-           ].to_dict('records')
+           ].to_dict('records'), [{"name": i, "id": i} for i in sorted(tab_cols)]]
 
 
 ########################################################################################################################
+# @app.callback(
+#     [Output("xlab-scat", "options"),
+#      Output("ylab-scat", "options"),
+#      Output("col-scat", "options"),
+#      Output("siz-scat", "options"),
+#      Output("fac-scat-row", "options"),
+#      Output("fac-scat-col", "options")],
+#     [Input("xlab-scat", "value")])      #################################################
+# def update_scat_dd(data):
+#     if not df_up.empty:
+#         xlab_options = [dict(label=x, value=x) for x in df_up.columns]
+#         ylab_options = [dict(label=x, value=x) for x in df_up.columns]
+#         color_options = [dict(label=x, value=x) for x in df_up.columns]
+#         siz_options = [dict(label=x, value=x) for x in df_up.columns]
+#         fac_row_options = [dict(label=x, value=x) for x in df_up.columns]
+#         fac_col_options = [dict(label=x, value=x) for x in df_up.columns]
+#
+#         return [xlab_options, ylab_options, color_options,
+#                 siz_options, fac_row_options, fac_col_options]
 
 
 @app.callback(
@@ -762,4 +818,4 @@ def update_para(test, var1, var2):
             return fig, result1
 
 
-app.run_server(debug=True)
+app.run_server(debug=False)

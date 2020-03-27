@@ -15,11 +15,31 @@ from plotly.offline import plot
 df = pd.read_csv('data/bcw.csv')
 df[' index'] = range(1, len(df) + 1)
 
+idx_list = [range(1, len(df) + 1)]
+print(idx_list)
+
 df_sub = df[[' index', 'radius_mean', 'perimeter_mean']]
 
 list_f = [df_sub['radius_mean'].to_list(), df_sub['perimeter_mean'].to_list()]
 
+# test = [i, j for i, j in zip(df.columns, df.dtypes)]
+
+# print(i, j) for i, j in zip(df.columns, df.dtypes)
+
+tab_cols = {}
+final = []
+# for i, j in zip(df.columns, df.dtypes):
+#     tab_cols = {"name": [i, j], "id": i}
+#     final.append(tab_cols)
+# print(tab_cols)
+# print(final)
 # print(list_f)
+
+# print(df.dtypes.to_list())
+# print(df.columns)
+
+# conv_dtype = [str(x) for x in df.dtypes.to_list()]
+# print(conv_dtype)
 
 # print(df_sub)
 

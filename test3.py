@@ -18,7 +18,7 @@ data_name = ""
 df_up = pd.DataFrame()
 df = pd.read_csv('data/bcw.csv')
 
-df[' index'] = range(1, len(df) + 1)
+df.insert(loc=0, column=' index', value=range(1, len(df) + 1))
 
 colnames = df.columns
 dtype_mapping = dict(df.dtypes)
@@ -176,8 +176,10 @@ tab_data_content = dbc.Card(
         dash_table.DataTable(
             id='datatable',
             columns=[
-                {"name": i, "id": i} for i in sorted(df.columns)
+                # {"name": [i, "test"], "id": i} for i in df.columns
+                {"name": [i, "None"], "id": i} for i in df.columns
             ],
+            # df.columns,
             page_current=0,
             page_size=PAGE_SIZE,
             page_action='custom',
@@ -467,7 +469,7 @@ def output_text(value, n):
         global df_up
         # global data_name
         df_up = pd.read_csv(value)
-        df_up[' index'] = range(1, len(df_up) + 1)
+        df_up.insert(loc=0, column=' index', value=range(1, len(df_up) + 1))
         # data_name = value.split('/')[-1].split('.')[0]
         return df_up.to_json(date_format='iso', orient='split')
 
@@ -485,11 +487,8 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, data
     if not df_up.empty:
         # df_temp = pd.read_json(data, orient='split')
         df_tab = df_up
-        tab_cols = df_tab.columns
     else:
         df_tab = df
-        tab_cols = df.columns
-
     if row_count_value is not None:
         page_size = row_count_value
 
@@ -533,8 +532,9 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, data
     dff = dff.round(2)
 
     return [dff.iloc[
-           page_current * page_size:(page_current + 1) * page_size
-           ].to_dict('records'), [{"name": i, "id": i} for i in sorted(tab_cols)]]
+            page_current * page_size:(page_current + 1) * page_size
+            ].to_dict('records'),
+            [{"name": [i, j], "id": i} for i, j in zip(df_tab.columns, [str(x) for x in df_tab.dtypes.to_list()])]]
 
 
 ########################################################################################################################
