@@ -73,7 +73,7 @@ app.config.suppress_callback_exceptions = True
 IDMP_LOGO = 'idmp_logo.png'
 ENCODED_URL = 'data:image/png;base64,{}'
 
-# Encoding the Maersk logo
+# Encoding the IDMP logo
 logo_enc = base64.b64encode(open(IDMP_LOGO, 'rb').read())
 
 navbar = dbc.Navbar(
