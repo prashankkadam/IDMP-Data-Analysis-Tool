@@ -657,7 +657,8 @@ def update_scatter(x, y, color, size, facet_row, facet_col, trend):
      Output('col-scat', 'options'),
      Output('siz-scat', 'options'),
      Output('fac-scat-row', 'options'),
-     Output('fac-scat-col', 'options')],
+     Output('fac-scat-col', 'options'),
+     Output('load-button-scat', 'disabled')],
     [Input('load-button-scat', 'n_clicks')])
 def update_labs(n):
     if n is not None:
@@ -666,14 +667,15 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
-                [{'label': i, 'value': i} for i in colnames]]
+                [{'label': i, 'value': i} for i in colnames],
+                True]
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
-                [{'label': i, 'value': i} for i in col_options], ]
+                [{'label': i, 'value': i} for i in col_options]]
 
 
 @app.callback(
@@ -710,7 +712,8 @@ def update_bar(x, y, color, type, facet_row, facet_col):
      Output('ylab-bar', 'options'),
      Output('col-bar', 'options'),
      Output('fac-bar-row', 'options'),
-     Output('fac-bar-col', 'options')],
+     Output('fac-bar-col', 'options'),
+     Output('load-button-bar', 'disabled')],
     [Input('load-button-bar', 'n_clicks')])
 def update_labs(n):
     if n is not None:
@@ -718,7 +721,8 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
-                [{'label': i, 'value': i} for i in colnames]]
+                [{'label': i, 'value': i} for i in colnames],
+                True]
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
@@ -760,7 +764,8 @@ def update_box(x, y, color, facet_row, facet_col):
      Output('ylab-box', 'options'),
      Output('col-box', 'options'),
      Output('fac-box-row', 'options'),
-     Output('fac-box-col', 'options')],
+     Output('fac-box-col', 'options'),
+     Output('load-button-box', 'disabled')],
     [Input('load-button-box', 'n_clicks')])
 def update_labs(n):
     if n is not None:
@@ -768,7 +773,8 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
-                [{'label': i, 'value': i} for i in colnames]]
+                [{'label': i, 'value': i} for i in colnames],
+                True]
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
@@ -806,14 +812,16 @@ def update_heatmap(x, y, facet_row, facet_col):
     [Output('xlab-heat', 'options'),
      Output('ylab-heat', 'options'),
      Output('fac-heat-row', 'options'),
-     Output('fac-heat-col', 'options')],
+     Output('fac-heat-col', 'options'),
+     Output('load-button-heat', 'disabled')],
     [Input('load-button-heat', 'n_clicks')])
 def update_labs(n):
     if n is not None:
         return [[{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
                 [{'label': i, 'value': i} for i in colnames],
-                [{'label': i, 'value': i} for i in colnames]]
+                [{'label': i, 'value': i} for i in colnames],
+                True]
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
@@ -977,11 +985,13 @@ def update_norm(test, var):
 
 
 @app.callback(
-    [Output('norm-var', 'options')],
+    [Output('norm-var', 'options'),
+     Output('load-button-norm', 'disabled')],
     [Input('load-button-norm', 'n_clicks')])
 def update_labs(n):
     if n is not None:
-        return [[{'label': i, 'value': i} for i in colnames]]
+        return [[{'label': i, 'value': i} for i in colnames],
+                True]
     else:
         return [[{'label': i, 'value': i} for i in col_options]]
 
@@ -1040,12 +1050,14 @@ def update_corr(test, var1, var2):
 
 @app.callback(
     [Output('corr-var1', 'options'),
-     Output('corr-var2', 'options')],
+     Output('corr-var2', 'options'),
+     Output('load-button-corr', 'disabled')],
     [Input('load-button-corr', 'n_clicks')])
 def update_labs(n):
     if n is not None:
         return [[{'label': i, 'value': i} for i in colnames],
-                [{'label': i, 'value': i} for i in colnames]]
+                [{'label': i, 'value': i} for i in colnames],
+                True]
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
@@ -1116,12 +1128,14 @@ def update_para(test, var1, var2):
 
 @app.callback(
     [Output('para-var1', 'options'),
-     Output('para-var2', 'options')],
+     Output('para-var2', 'options'),
+     Output('load-button-para', 'disabled')],
     [Input('load-button-para', 'n_clicks')])
 def update_labs(n):
     if n is not None:
         return [[{'label': i, 'value': i} for i in colnames],
-                [{'label': i, 'value': i} for i in colnames]]
+                [{'label': i, 'value': i} for i in colnames],
+                True]
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
