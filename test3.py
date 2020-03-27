@@ -243,7 +243,7 @@ scat_tab = dbc.Card(
         html.Div(
             [
                 html.Div([dbc.Button("Load",
-                                     id="load-button-plt",
+                                     id="load-button-scat",
                                      color="info",
                                      className="mr-2",
                                      style={"width": "100%",
@@ -270,6 +270,12 @@ bar_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
             [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-bar",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
                 html.P(["X label" + ":", dcc.Dropdown(id="xlab-bar", options=col_options)]),
                 html.P(["Y label" + ":", dcc.Dropdown(id="ylab-bar", options=col_options)]),
                 html.P(["Color" + ":", dcc.Dropdown(id="col-bar", options=col_options)]),
@@ -290,6 +296,12 @@ box_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
             [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-box",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
                 html.P(["X label" + ":", dcc.Dropdown(id="xlab-box", options=col_options)]),
                 html.P(["Y label" + ":", dcc.Dropdown(id="ylab-box", options=col_options)]),
                 html.P(["Color" + ":", dcc.Dropdown(id="col-box", options=col_options)]),
@@ -307,6 +319,12 @@ heat_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
             [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-heat",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
                 html.P(["X label" + ":", dcc.Dropdown(id="xlab-heat", options=col_options)]),
                 html.P(["Y label" + ":", dcc.Dropdown(id="ylab-heat", options=col_options)]),
                 html.P(["Facet Row" + ":", dcc.Dropdown(id="fac-heat-row", options=col_options)]),
@@ -622,7 +640,7 @@ def update_scatter(x, y, color, size, facet_row, facet_col, trend):
      Output('siz-scat', 'options'),
      Output('fac-scat-row', 'options'),
      Output('fac-scat-col', 'options')],
-    [Input('load-button-plt', 'n_clicks')])
+    [Input('load-button-scat', 'n_clicks')])
 def update_labs(n):
     if n is not None:
         return [[{'label': i, 'value': i} for i in colnames],
@@ -637,7 +655,153 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options],
-                [{'label': i, 'value': i} for i in col_options],]
+                [{'label': i, 'value': i} for i in col_options], ]
+
+
+@app.callback(
+    Output("plot-bar", "figure"),
+    [Input("xlab-bar", "value"),
+     Input("ylab-bar", "value"),
+     Input("col-bar", "value"),
+     Input("typ-bar", "value"),
+     Input("fac-bar-row", "value"),
+     Input("fac-bar-col", "value")])
+def update_bar(x, y, color, type, facet_row, facet_col):
+    if df_up.empty:
+        return px.bar(
+            df,
+            x=x,
+            y=y,
+            color=color,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            height=700)
+    else:
+        return px.bar(
+            df_up,
+            x=x,
+            y=y,
+            color=color,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            height=700)
+
+
+@app.callback(
+    [Output('xlab-bar', 'options'),
+     Output('ylab-bar', 'options'),
+     Output('col-bar', 'options'),
+     Output('fac-bar-row', 'options'),
+     Output('fac-bar-col', 'options')],
+    [Input('load-button-bar', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames]]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options]]
+
+
+@app.callback(
+    Output("plot-box", "figure"),
+    [Input("xlab-box", "value"),
+     Input("ylab-box", "value"),
+     Input("col-box", "value"),
+     Input("fac-box-row", "value"),
+     Input("fac-box-col", "value")])
+def update_box(x, y, color, facet_row, facet_col):
+    if df_up.empty:
+        return px.box(
+            df,
+            x=x,
+            y=y,
+            color=color,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            height=700)
+    else:
+        return px.box(
+            df_up,
+            x=x,
+            y=y,
+            color=color,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            height=700)
+
+
+@app.callback(
+    [Output('xlab-box', 'options'),
+     Output('ylab-box', 'options'),
+     Output('col-box', 'options'),
+     Output('fac-box-row', 'options'),
+     Output('fac-box-col', 'options')],
+    [Input('load-button-box', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames]]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options]]
+
+
+@app.callback(
+    Output("plot-heat", "figure"),
+    [Input("xlab-heat", "value"),
+     Input("ylab-heat", "value"),
+     Input("fac-heat-row", "value"),
+     Input("fac-heat-col", "value")])
+def update_heatmap(x, y, facet_row, facet_col):
+    if df_up.empty:
+        return px.density_heatmap(
+            df,
+            x=x,
+            y=y,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            height=700)
+    else:
+        return px.density_heatmap(
+            df_up,
+            x=x,
+            y=y,
+            facet_row=facet_row,
+            facet_col=facet_col,
+            height=700)
+
+
+@app.callback(
+    [Output('xlab-heat', 'options'),
+     Output('ylab-heat', 'options'),
+     Output('fac-heat-row', 'options'),
+     Output('fac-heat-col', 'options')],
+    [Input('load-button-heat', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames]]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options]]
+
 
 # @app.callback(
 #     Output('no-data-plt', 'children'),
@@ -661,60 +825,60 @@ def update_labs(n):
 ########################################################################################################################
 
 
-@app.callback(
-    Output("plot-bar", "figure"),
-    [Input("xlab-bar", "value"),
-     Input("ylab-bar", "value"),
-     Input("col-bar", "value"),
-     Input("typ-bar", "value"),
-     Input("fac-bar-row", "value"),
-     Input("fac-bar-col", "value")])
-def update_bar(x, y, color, type, facet_row, facet_col):
-    return px.bar(
-        df,
-        x=x,
-        y=y,
-        color=color,
-        facet_row=facet_row,
-        facet_col=facet_col,
-        height=700,
-    )
+# @app.callback(
+#     Output("plot-bar", "figure"),
+#     [Input("xlab-bar", "value"),
+#      Input("ylab-bar", "value"),
+#      Input("col-bar", "value"),
+#      Input("typ-bar", "value"),
+#      Input("fac-bar-row", "value"),
+#      Input("fac-bar-col", "value")])
+# def update_bar(x, y, color, type, facet_row, facet_col):
+#     return px.bar(
+#         df,
+#         x=x,
+#         y=y,
+#         color=color,
+#         facet_row=facet_row,
+#         facet_col=facet_col,
+#         height=700,
+#     )
 
 
-@app.callback(
-    Output("plot-box", "figure"),
-    [Input("xlab-box", "value"),
-     Input("ylab-box", "value"),
-     Input("col-box", "value"),
-     Input("fac-box-row", "value"),
-     Input("fac-box-col", "value")])
-def update_box(x, y, color, facet_row, facet_col):
-    return px.box(
-        df,
-        x=x,
-        y=y,
-        color=color,
-        facet_row=facet_row,
-        facet_col=facet_col,
-        height=700,
-    )
+# @app.callback(
+#     Output("plot-box", "figure"),
+#     [Input("xlab-box", "value"),
+#      Input("ylab-box", "value"),
+#      Input("col-box", "value"),
+#      Input("fac-box-row", "value"),
+#      Input("fac-box-col", "value")])
+# def update_box(x, y, color, facet_row, facet_col):
+#     return px.box(
+#         df,
+#         x=x,
+#         y=y,
+#         color=color,
+#         facet_row=facet_row,
+#         facet_col=facet_col,
+#         height=700,
+#     )
 
 
-@app.callback(
-    Output("plot-heat", "figure"),
-    [Input("xlab-heat", "value"),
-     Input("ylab-heat", "value"),
-     Input("fac-heat-row", "value"),
-     Input("fac-heat-col", "value")])
-def update_heatmap(x, y, facet_row, facet_col):
-    return px.density_heatmap(
-        df,
-        x=x,
-        y=y,
-        facet_row=facet_row,
-        facet_col=facet_col,
-        height=700,
-    )
+# @app.callback(
+#     Output("plot-heat", "figure"),
+#     [Input("xlab-heat", "value"),
+#      Input("ylab-heat", "value"),
+#      Input("fac-heat-row", "value"),
+#      Input("fac-heat-col", "value")])
+# def update_heatmap(x, y, facet_row, facet_col):
+#     return px.density_heatmap(
+#         df,
+#         x=x,
+#         y=y,
+#         facet_row=facet_row,
+#         facet_col=facet_col,
+#         height=700,
+#     )
 
 
 @app.callback(
