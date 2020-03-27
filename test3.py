@@ -375,6 +375,12 @@ norm_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
             [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-norm",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
                 html.P(
                     ["Normality Tests" + ":", dcc.Dropdown(id="norm-test",
                                                            options=normality_options)]),
@@ -403,6 +409,12 @@ corr_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
             [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-corr",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
                 html.P(
                     ["Correlation Tests" + ":", dcc.Dropdown(id="corr-test",
                                                              options=correlation_options)]),
@@ -430,6 +442,12 @@ para_tab = dbc.Card(
     dbc.CardBody([
         html.Div(
             [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-para",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
                 html.P(
                     ["Parametric Tests" + ":", dcc.Dropdown(id="para-test",
                                                             options=parametric_options)]),
@@ -891,9 +909,13 @@ def update_labs(n):
     [Input("norm-test", "value"),
      Input("norm-var", "value")])
 def update_norm(test, var):
+    if df_up.empty:
+        df_norm = df
+    else:
+        df_norm = df_up
     if test == "Shapiro-Wilk" and var is not None:
-        stat, p = shapiro(df[var])
-        fig = px.histogram(df, x=var, height=500)
+        stat, p = shapiro(df_norm[var])
+        fig = px.histogram(df_norm, x=var, height=500)
         if p > 0.05:
             result1 = 'Probably Gaussian : stat=%.3f, p=%.3f' % (stat, p)
             result2 = ""
@@ -910,8 +932,8 @@ def update_norm(test, var):
             return fig, result1, result2, result3, result4, result5
 
     elif test == "D’Agostino’s K^2" and var is not None:
-        stat, p = normaltest(df[var])
-        fig = px.histogram(df, x=var, height=500)
+        stat, p = normaltest(df_norm[var])
+        fig = px.histogram(df_norm, x=var, height=500)
         if p > 0.05:
             result1 = 'Probably Gaussian : stat=%.3f, p=%.3f' % (stat, p)
             result2 = ""
@@ -928,8 +950,8 @@ def update_norm(test, var):
             return fig, result1, result2, result3, result4, result5
 
     elif test == "Anderson-Darling" and var is not None:
-        res = anderson(df[var])
-        fig = px.histogram(df, x=var, height=500)
+        res = anderson(df_norm[var])
+        fig = px.histogram(df_norm, x=var, height=500)
 
         if res.statistic < res.critical_values[0]:
             result1 = 'Probably Gaussian at the %.1f%% level,' % res.significance_level[0]
@@ -955,15 +977,29 @@ def update_norm(test, var):
 
 
 @app.callback(
+    [Output('norm-var', 'options')],
+    [Input('load-button-norm', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames]]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options]]
+
+
+@app.callback(
     [Output("plot-corr", "figure"),
      Output("corr-val1", "children")],
     [Input("corr-test", "value"),
      Input("corr-var1", "value"),
      Input("corr-var2", "value")])
 def update_corr(test, var1, var2):
+    if df_up.empty:
+        df_corr = df
+    else:
+        df_corr = df_up
     if test == "Pearson" and var1 is not None and var2 is not None:
-        stat, p = pearsonr(df[var1], df[var2])
-        fig = px.scatter(df, x=var1, y=var2, height=500)
+        stat, p = pearsonr(df_corr[var1], df_corr[var2])
+        fig = px.scatter(df_corr, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
@@ -972,8 +1008,8 @@ def update_corr(test, var1, var2):
             return fig, result1
 
     elif test == "Spearman" and var1 is not None and var2 is not None:
-        stat, p = spearmanr(df[var1], df[var2])
-        fig = px.scatter(df, x=var1, y=var2, height=500)
+        stat, p = spearmanr(df_corr[var1], df_corr[var2])
+        fig = px.scatter(df_corr, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
@@ -982,8 +1018,8 @@ def update_corr(test, var1, var2):
             return fig, result1
 
     elif test == "Kendall" and var1 is not None and var2 is not None:
-        stat, p = kendalltau(df[var1], df[var2])
-        fig = px.scatter(df, x=var1, y=var2, height=500)
+        stat, p = kendalltau(df_corr[var1], df_corr[var2])
+        fig = px.scatter(df_corr, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
@@ -992,14 +1028,27 @@ def update_corr(test, var1, var2):
             return fig, result1
 
     elif test == "Chi-Squared" and var1 is not None and var2 is not None:
-        stat, p, dof, expected = chi2_contingency(df[[var1, var2]])
-        fig = px.scatter(df, x=var1, y=var2, height=500)
+        stat, p, dof, expected = chi2_contingency(df_corr[[var1, var2]])
+        fig = px.scatter(df_corr, x=var1, y=var2, height=500)
         if p > 0.05:
             result1 = 'Probably independent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
         else:
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
+
+
+@app.callback(
+    [Output('corr-var1', 'options'),
+     Output('corr-var2', 'options')],
+    [Input('load-button-corr', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames]]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options]]
 
 
 ########################################################################################################################
@@ -1026,9 +1075,13 @@ def update_corr(test, var1, var2):
      Input("para-var1", "value"),
      Input("para-var2", "value")])
 def update_para(test, var1, var2):
+    if df_up.empty:
+        df_para = df
+    else:
+        df_para = df_up
     if test == "Student t-test" and var1 is not None and var2 is not None:
-        stat, p = ttest_ind(df[var1], df[var2])
-        df_sub = df[[' index', var1, var2]]
+        stat, p = ttest_ind(df_para[var1], df_para[var2])
+        df_sub = df_para[[' index', var1, var2]]
         df_melt = pd.melt(df_sub, id_vars=' index')
         fig = px.histogram(df_melt, x='value', color='variable', height=500)
         if p > 0.05:
@@ -1038,8 +1091,8 @@ def update_para(test, var1, var2):
             result1 = 'Probably different distributions : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
     elif test == "Paired Student t-test" and var1 is not None and var2 is not None:
-        stat, p = ttest_rel(df[var1], df[var2])
-        df_sub = df[[' index', var1, var2]]
+        stat, p = ttest_rel(df_para[var1], df_para[var2])
+        df_sub = df_para[[' index', var1, var2]]
         df_melt = pd.melt(df_sub, id_vars=' index')
         fig = px.histogram(df_melt, x='value', color='variable', height=500)
         if p > 0.05:
@@ -1049,8 +1102,8 @@ def update_para(test, var1, var2):
             result1 = 'Probably different distributions : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
     elif test == "ANOVA" and var1 is not None and var2 is not None:
-        stat, p = f_oneway(df[var1], df[var2])
-        df_sub = df[[' index', var1, var2]]
+        stat, p = f_oneway(df_para[var1], df_para[var2])
+        df_sub = df_para[[' index', var1, var2]]
         df_melt = pd.melt(df_sub, id_vars=' index')
         fig = px.histogram(df_melt, x='value', color='variable', height=500)
         if p > 0.05:
@@ -1059,6 +1112,19 @@ def update_para(test, var1, var2):
         else:
             result1 = 'Probably different distributions : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
+
+
+@app.callback(
+    [Output('para-var1', 'options'),
+     Output('para-var2', 'options')],
+    [Input('load-button-para', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames]]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options]]
 
 
 app.run_server(debug=False)
