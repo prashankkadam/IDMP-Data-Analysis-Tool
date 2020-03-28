@@ -1,6 +1,5 @@
 import base64
 import io
-
 import plotly.express as px
 import dash
 import dash_html_components as html
@@ -12,6 +11,9 @@ import pandas as pd
 from scipy.stats import shapiro, normaltest, anderson, \
     pearsonr, spearmanr, kendalltau, chi2_contingency, \
     ttest_ind, ttest_rel, f_oneway
+import statsmodels.api as sm
+
+# package lxml required
 
 # Statmodels installation required for trendline
 data_name = ""
@@ -531,11 +533,33 @@ lin_tab = dbc.Card(
                                                      multi=True)]),
                 html.P(
                     ["Target" + ":", dcc.Dropdown(id="lin-tar",
-                                                  options=col_options)])
+                                                  options=col_options)]),
+                html.Div([dbc.Button("Run",
+                                     id="run-button-lin",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
             ],
-            style={"width": "25%", "float": "left", "padding": "20px"},
+            style={"width": "25%", "float": "left", "padding": "40px"},
         ),
-        html.Div(id='lin_mod_sum', style={"width": "75%", "display": "inline-block", "height": 500})
+        # html.Div([
+        #     dash_table.DataTable(
+        #         id='summary-tab',
+        #         columns=[
+        #             # {"name": [i, "test"], "id": i} for i in df.columns
+        #             {"name": i, "id": i} for i in []
+        #         ])
+        #     ], style={"width": "75%", "display": "inline-block", "height": 500})
+        html.H4("OLS Regression Results", style={"width": "75%", "display": "inline-block", "padding": "10px"}),
+        html.Div(id='lin-mod-sum', style={"width": "70%",
+                                          "display": "inline-block",
+                                          "height": 400,
+                                          "padding": "10px"})
+        # html.Table(id='lin-mod-tab', style={"width": "75%",
+        #                                     "float": "right",
+        #                                     "display": "inline-block",
+        #                                     "padding": "200px"})
         # dcc.Graph(id="plot-corr", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
         # html.Table([
         #     html.Tr(html.Td(id='corr-val1'))
@@ -1221,6 +1245,45 @@ def update_labs(n):
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
+
+
+@app.callback(
+    Output('lin-mod-sum', "children"),
+    [Input('lin-type', "value"),
+     Input('lin-pre', "value"),
+     Input('lin-tar', "value"),
+     Input('run-button-lin', "n_clicks")])
+def run_lin(mod_type, predictors, target, run):
+    if run is not None:
+        if mod_type == "Regression":
+            X = df[predictors].values.tolist()
+            y = df[target].values.tolist()
+            model = sm.OLS(y, X).fit()
+            # predictions = model.predict(X)
+            results_as_html = model.summary().tables[0].as_html()
+            df_summ = pd.read_html(results_as_html, header=0)[0]
+
+            return html.Div([
+                dash_table.DataTable(
+                    id='table',
+                    columns=[{"name": i, "id": i} for i in df_summ.columns],
+                    data=df_summ.to_dict("rows"),
+                    style_header={
+                        'backgroundColor': 'white'
+                    },
+                    style_header_conditional=[
+                        {'if': {'column_id': 'Dep. Variable:'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'R-squared (uncentered):'},
+                         'backgroundColor': '#DCDCDC'}
+                    ],
+                    style_data_conditional=[
+                        {'if': {'column_id': 'Dep. Variable:'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'R-squared (uncentered):'},
+                         'backgroundColor': '#DCDCDC'}]
+                )
+            ])
 
 
 app.run_server(debug=False)

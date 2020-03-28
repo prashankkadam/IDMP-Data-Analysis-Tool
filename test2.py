@@ -1,7 +1,9 @@
 import base64
 import datetime
 import io
+import statsmodels.api as sm
 
+#
 import dash
 # from dash.dependencies import Input, Output, State
 # import dash_core_components as dcc
@@ -15,19 +17,45 @@ from plotly.offline import plot
 df = pd.read_csv('data/bcw.csv')
 df[' index'] = range(1, len(df) + 1)
 
-idx_list = [range(1, len(df) + 1)]
-print(idx_list)
+X = df[["radius_mean", "radius_se"]].values.tolist()
+y = df["texture_mean"].values.tolist()
+#
+# print(X)
+#
+model = sm.OLS(y, X).fit()
+predictions = model.predict(X)
+# print(type(model.summary()))
 
-df_sub = df[[' index', 'radius_mean', 'perimeter_mean']]
+results_as_html = model.summary().tables[0].as_html()
+df = pd.read_html(results_as_html, header=0, index_col=0)[0]
+print(model.summary())
 
-list_f = [df_sub['radius_mean'].to_list(), df_sub['perimeter_mean'].to_list()]
+# print([x for x in model.summary()])
+# idx_list = [range(1, len(df) + 1)]
+# print(idx_list)
+
+import cgi
+#
+# print("Content-type: text/html")
+# print("""<html>
+# <head><title>My first Python CGI app</title></head>
+# <body>
+# <p>Hello, 'world'!</p>
+# </body>
+# </html>""")
+
+# df_sub = df[[' index', 'radius_mean', 'perimeter_mean']]
+#
+# list_f = [df_sub['radius_mean'].to_list(), df_sub['perimeter_mean'].to_list()]
 
 # test = [i, j for i, j in zip(df.columns, df.dtypes)]
 
 # print(i, j) for i, j in zip(df.columns, df.dtypes)
 
-tab_cols = {}
-final = []
+# tab_cols = {}
+# final = []
+
+
 # for i, j in zip(df.columns, df.dtypes):
 #     tab_cols = {"name": [i, j], "id": i}
 #     final.append(tab_cols)
