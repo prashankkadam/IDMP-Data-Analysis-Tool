@@ -30,6 +30,14 @@ results_as_html = model.summary().tables[0].as_html()
 df = pd.read_html(results_as_html, header=0, index_col=0)[0]
 print(model.summary())
 
+s = ['I', 'want', 4, 'apples', 'and', 18, 'bananas']
+
+# using list comprehension
+listToStr = ' + '.join(map(str, s))
+formula = ' ~ '.join(["abcd", listToStr])
+
+print(type(formula))
+
 # print([x for x in model.summary()])
 # idx_list = [range(1, len(df) + 1)]
 # print(idx_list)

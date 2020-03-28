@@ -12,6 +12,7 @@ from scipy.stats import shapiro, normaltest, anderson, \
     pearsonr, spearmanr, kendalltau, chi2_contingency, \
     ttest_ind, ttest_rel, f_oneway
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 # package lxml required
 
@@ -541,7 +542,7 @@ lin_tab = dbc.Card(
                                      style={"width": "100%",
                                             "display": "inline-block"})], style={"padding": "20px"}),
             ],
-            style={"width": "25%", "float": "left", "padding": "40px"},
+            style={"width": "25%", "float": "left", "padding": "40px", "height": 1000},
         ),
         # html.Div([
         #     dash_table.DataTable(
@@ -551,11 +552,19 @@ lin_tab = dbc.Card(
         #             {"name": i, "id": i} for i in []
         #         ])
         #     ], style={"width": "75%", "display": "inline-block", "height": 500})
-        html.H4("OLS Regression Results", style={"width": "75%", "display": "inline-block", "padding": "10px"}),
-        html.Div(id='lin-mod-sum', style={"width": "70%",
-                                          "display": "inline-block",
-                                          "height": 400,
-                                          "padding": "10px"})
+        html.H4("OLS Regression Results:", style={"width": "75%", "display": "inline-block", "padding": "10px"}),
+        html.Div(id='lin-mod-tab1', style={"width": "70%",
+                                           "display": "inline-block",
+                                           "height": 300,
+                                           "padding": "10px"}),
+        html.Div(id='lin-mod-tab2', style={"width": "70%",
+                                           "display": "inline-block",
+                                           "height": 150,
+                                           "padding": "10px"}),
+        html.Div(id='lin-mod-tab3', style={"width": "70%",
+                                           "display": "inline-block",
+                                           "height": 200,
+                                           "padding": "10px"})
         # html.Table(id='lin-mod-tab', style={"width": "75%",
         #                                     "float": "right",
         #                                     "display": "inline-block",
@@ -1248,24 +1257,36 @@ def update_labs(n):
 
 
 @app.callback(
-    Output('lin-mod-sum', "children"),
+    [Output('lin-mod-tab1', "children"),
+     Output('lin-mod-tab3', "children"),
+     Output('lin-mod-tab2', "children")],
     [Input('lin-type', "value"),
      Input('lin-pre', "value"),
      Input('lin-tar', "value"),
      Input('run-button-lin', "n_clicks")])
 def run_lin(mod_type, predictors, target, run):
-    if run is not None:
+    if run :
         if mod_type == "Regression":
-            X = df[predictors].values.tolist()
-            y = df[target].values.tolist()
-            model = sm.OLS(y, X).fit()
+            # X = df[predictors].values.tolist()
+            # y = df[target].values.tolist()
+            # model = sm.OLS(y, X).fit()
+
+            pred_str = ' + '.join(map(str, predictors))
+            formula = ' ~ '.join([target, pred_str])
+
+            model = smf.ols(formula=formula, data=df).fit()
+
             # predictions = model.predict(X)
             results_as_html = model.summary().tables[0].as_html()
+            results_as_html2 = model.summary().tables[2].as_html()
+            results_as_html3 = model.summary().tables[1].as_html()
             df_summ = pd.read_html(results_as_html, header=0)[0]
+            df_summ2 = pd.read_html(results_as_html2, header=0)[0]
+            df_summ3 = pd.read_html(results_as_html3, header=0)[0]
 
-            return html.Div([
+            return [html.Div([
                 dash_table.DataTable(
-                    id='table',
+                    id='table1',
                     columns=[{"name": i, "id": i} for i in df_summ.columns],
                     data=df_summ.to_dict("rows"),
                     style_header={
@@ -1281,9 +1302,37 @@ def run_lin(mod_type, predictors, target, run):
                         {'if': {'column_id': 'Dep. Variable:'},
                          'backgroundColor': '#DCDCDC'},
                         {'if': {'column_id': 'R-squared (uncentered):'},
-                         'backgroundColor': '#DCDCDC'}]
-                )
-            ])
+                         'backgroundColor': '#DCDCDC'}])
+                ]),
+                html.Div([
+                    dash_table.DataTable(
+                        id='table1',
+                        columns=[{"name": i, "id": i} for i in df_summ3.columns],
+                        data=df_summ3.to_dict("rows"),
+                        style_header={
+                            'backgroundColor': '#DCDCDC'})
+                ]),
+                html.Div([
+                    dash_table.DataTable(
+                        id='table2',
+                        columns=[{"name": i, "id": i} for i in df_summ2.columns],
+                        data=df_summ2.to_dict("rows"),
+                        style_header={
+                            'backgroundColor': 'white'},
+                        style_header_conditional=[
+                            {'if': {'column_id': 'Omnibus:'},
+                             'backgroundColor': '#DCDCDC'},
+                            {'if': {'column_id': 'Durbin-Watson:'},
+                             'backgroundColor': '#DCDCDC'}
+                        ],
+                        style_data_conditional=[
+                            {'if': {'column_id': 'Omnibus:'},
+                             'backgroundColor': '#DCDCDC'},
+                            {'if': {'column_id': 'Durbin-Watson:'},
+                             'backgroundColor': '#DCDCDC'}]
+                    )
+                ])
+            ]
 
 
 app.run_server(debug=False)
