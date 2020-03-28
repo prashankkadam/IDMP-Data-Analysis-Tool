@@ -34,6 +34,7 @@ hypothesis_tests = ["Normality", "Correlation", "Parametric"]
 normality_tests = ["Shapiro-Wilk", "D’Agostino’s K^2", "Anderson-Darling"]
 correlation_tests = ["Pearson", "Spearman", "Kendall", "Chi-Squared"]
 parametric_tests = ["Student t-test", "Paired Student t-test", "ANOVA"]
+modeling_types = ["Regression", "Classification"]
 
 col_options = [dict(label=x, value=x) for x in df.columns]
 num_options = [dict(label=x, value=x) for x in list(set(numeric_cols))]
@@ -44,6 +45,8 @@ hypothesis_options = [dict(label=x, value=x) for x in hypothesis_tests]
 normality_options = [dict(label=x, value=x) for x in normality_tests]
 correlation_options = [dict(label=x, value=x) for x in correlation_tests]
 parametric_options = [dict(label=x, value=x) for x in parametric_tests]
+
+types_options = [dict(label=x, value=x) for x in modeling_types]
 
 upd_scat_x = 0
 
@@ -111,6 +114,10 @@ nav = html.Div([
             dbc.NavLink("Quantization",
                         id="id_qnt",
                         href="/apps/qnt",
+                        style={'min-width': '225px', 'color': '#17a2b8'}),
+            dbc.NavLink("Modeling",
+                        id="id_mod",
+                        href="/apps/mod",
                         style={'min-width': '200px', 'color': '#17a2b8'}),
             # dbc.NavLink("Disabled", disabled=True, href="#", style={'min-width': '200px', 'color': 'skyblue'}),
         ],
@@ -136,6 +143,8 @@ def display_page(pathname):
         return tab_plot_content
     elif pathname == '/apps/qnt':
         return tab_qnt_content
+    elif pathname == '/apps/mod':
+        return tab_mod_content
     else:
         return tab_data_content
 
@@ -494,6 +503,79 @@ tab_qnt_content = dbc.Card(
                         value='tab-para',
                         style=tab_style,
                         selected_style=tab_selected_style)
+            ], style=tabs_styles)
+        ]
+
+    ),
+    className="mt-3",
+)
+
+########################################################################################################################
+
+lin_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-lin",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
+                html.P(
+                    ["Type" + ":", dcc.Dropdown(id="lin-type",
+                                                options=types_options)]),
+                html.P(
+                    ["Predictor" + ":", dcc.Dropdown(id="lin-pre",
+                                                     options=col_options,
+                                                     multi=True)]),
+                html.P(
+                    ["Target" + ":", dcc.Dropdown(id="lin-tar",
+                                                  options=col_options)])
+            ],
+            style={"width": "25%", "float": "left", "padding": "20px"},
+        ),
+        html.Div(id='lin_mod_sum', style={"width": "75%", "display": "inline-block", "height": 500})
+        # dcc.Graph(id="plot-corr", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
+        # html.Table([
+        #     html.Tr(html.Td(id='corr-val1'))
+        # ], style={"width": "75%",
+        #           "float": "right",
+        #           "display": "inline-block",
+        #           "padding-left": "75px"})
+    ]),
+    className="mt-3",
+)
+
+tab_mod_content = dbc.Card(
+    dbc.CardBody(
+        [
+            dcc.Tabs(id="tabs-mod", value='tab-lin', children=[
+                dcc.Tab(children=lin_tab,
+                        label='Linear',
+                        value='tab-lin',
+                        style=tab_style,
+                        selected_style=tab_selected_style),
+                # dcc.Tab(children=norm_tab,
+                #         label='Logistic',
+                #         value='tab-log',
+                #         style=tab_style,
+                #         selected_style=tab_selected_style),
+                # dcc.Tab(children=corr_tab,
+                #         label='Bayesian',
+                #         value='tab-bay',
+                #         style=tab_style,
+                #         selected_style=tab_selected_style),
+                # dcc.Tab(children=para_tab,
+                #         label='Decision Tree',
+                #         value='tab-dec',
+                #         style=tab_style,
+                #         selected_style=tab_selected_style),
+                # dcc.Tab(children=para_tab,
+                #         label='SVM',
+                #         value='tab-svm',
+                #         style=tab_style,
+                #         selected_style=tab_selected_style),
             ], style=tabs_styles)
         ]
 
