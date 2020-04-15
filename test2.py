@@ -2,6 +2,8 @@ import base64
 import datetime
 import io
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from sklearn import preprocessing
 
 #
 import dash
@@ -17,26 +19,63 @@ from plotly.offline import plot
 df = pd.read_csv('data/bcw.csv')
 df[' index'] = range(1, len(df) + 1)
 
-X = df[["radius_mean", "radius_se"]].values.tolist()
-y = df["texture_mean"].values.tolist()
+# X = df[["radius_mean", "radius_se"]].values.tolist()
+# y = df["texture_mean"].values.tolist()
 #
-# print(X)
+# print(X)k.lieberherr@northeastern.edu
 #
-model = sm.OLS(y, X).fit()
-predictions = model.predict(X)
-# print(type(model.summary()))
 
-results_as_html = model.summary().tables[0].as_html()
-df = pd.read_html(results_as_html, header=0, index_col=0)[0]
+strqw = 'diagnosis'
+
+# min_max_scaler = preprocessing.MinMaxScaler()
+# df[[strqw]] = min_max_scaler.fit_transform(df[[strqw]])
+
+i = 0
+
+print(df[strqw])
+print(df[[strqw]])
+
+df[strqw] = pd.Categorical(df[strqw])
+df[strqw] = df[strqw].cat.codes
+
+min_max_scaler = preprocessing.MinMaxScaler()
+df[[strqw]] = min_max_scaler.fit_transform(df[[strqw]])
+
+# if "object" in str(df[[strqw]].dtypes):
+#     print(str(df[[strqw]].dtypes))
+#     for ele in df[strqw].unique():
+#         df[strqw].replace(ele, i)
+#         i += 1
+
+print(df[strqw].unique())
+
+formula = 'diagnosis ~ radius_mean'
+
+# model = smf.ols(formula=str(formula), data=df).fit()
+model = smf.logit(formula=str(formula), data=df).fit()
 print(model.summary())
 
-s = ['I', 'want', 4, 'apples', 'and', 18, 'bananas']
+results_as_html = model.summary().tables[0].as_html()
+# results_as_html2 = model.summary().tables[2].as_html()
+results_as_html3 = model.summary().tables[1].as_html()
+df_summ = pd.read_html(results_as_html, header=0)[0]
+# df_summ2 = pd.read_html(results_as_html2, header=0)[0]
+df_summ3 = pd.read_html(results_as_html3, header=0)[0]
 
-# using list comprehension
-listToStr = ' + '.join(map(str, s))
-formula = ' ~ '.join(["abcd", listToStr])
-
-print(type(formula))
+# predictions = model.predict(X)
+# # print(type(model.summary()))
+#
+# results_as_html = model.summary().tables[0].as_html()
+# df = pd.read_html(results_as_html, header=0, index_col=0)[0]
+# print(model.summary())
+#
+# s = ['I', 'want', 4, 'apples', 'and', 18, 'bananas']
+#
+# # using list comprehension
+# listToStr = ' + '.join(map(str, s))
+# formula = ' ~ '.join(["abcd", listToStr])
+#
+# print(type(formula))
 
 # print([x for x in model.summary()])
 # idx_list = [range(1, len(df) + 1)]

@@ -13,6 +13,7 @@ from scipy.stats import shapiro, normaltest, anderson, \
     ttest_ind, ttest_rel, f_oneway
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from sklearn import preprocessing
 
 # package lxml required
 
@@ -525,9 +526,9 @@ lin_tab = dbc.Card(
                                      className="mr-2",
                                      style={"width": "100%",
                                             "display": "inline-block"})], style={"padding": "20px"}),
-                html.P(
-                    ["Type" + ":", dcc.Dropdown(id="lin-type",
-                                                options=types_options)]),
+                # html.P(
+                #     ["Type" + ":", dcc.Dropdown(id="lin-type",
+                #                                 options=types_options)]),
                 html.P(
                     ["Predictor" + ":", dcc.Dropdown(id="lin-pre",
                                                      options=col_options,
@@ -580,6 +581,71 @@ lin_tab = dbc.Card(
     className="mt-3",
 )
 
+log_tab = dbc.Card(
+    dbc.CardBody([
+        html.Div(
+            [
+                html.Div([dbc.Button("Load",
+                                     id="load-button-log",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
+                # html.P(
+                #     ["Type" + ":", dcc.Dropdown(id="lin-type",
+                #                                 options=types_options)]),
+                html.P(
+                    ["Predictor" + ":", dcc.Dropdown(id="log-pre",
+                                                     options=col_options,
+                                                     multi=True)]),
+                html.P(
+                    ["Target" + ":", dcc.Dropdown(id="log-tar",
+                                                  options=col_options)]),
+                html.Div([dbc.Button("Run",
+                                     id="run-button-log",
+                                     color="info",
+                                     className="mr-2",
+                                     style={"width": "100%",
+                                            "display": "inline-block"})], style={"padding": "20px"}),
+            ],
+            style={"width": "25%", "float": "left", "padding": "40px", "height": 1000},
+        ),
+        # html.Div([
+        #     dash_table.DataTable(
+        #         id='summary-tab',
+        #         columns=[
+        #             # {"name": [i, "test"], "id": i} for i in df.columns
+        #             {"name": i, "id": i} for i in []
+        #         ])
+        #     ], style={"width": "75%", "display": "inline-block", "height": 500})
+        html.H4("Logistic Regression Results:", style={"width": "75%", "display": "inline-block", "padding": "10px"}),
+        html.Div(id='log-mod-tab1', style={"width": "70%",
+                                           "display": "inline-block",
+                                           "height": 300,
+                                           "padding": "10px"}),
+        html.Div(id='log-mod-tab2', style={"width": "70%",
+                                           "display": "inline-block",
+                                           "height": 150,
+                                           "padding": "10px"}),
+        html.Div(id='log-mod-tab3', style={"width": "70%",
+                                           "display": "inline-block",
+                                           "height": 200,
+                                           "padding": "10px"})
+        # html.Table(id='lin-mod-tab', style={"width": "75%",
+        #                                     "float": "right",
+        #                                     "display": "inline-block",
+        #                                     "padding": "200px"})
+        # dcc.Graph(id="plot-corr", figure={}, style={"width": "75%", "display": "inline-block", "height": 500}),
+        # html.Table([
+        #     html.Tr(html.Td(id='corr-val1'))
+        # ], style={"width": "75%",
+        #           "float": "right",
+        #           "display": "inline-block",
+        #           "padding-left": "75px"})
+    ]),
+    className="mt-3",
+)
+
 tab_mod_content = dbc.Card(
     dbc.CardBody(
         [
@@ -589,11 +655,11 @@ tab_mod_content = dbc.Card(
                         value='tab-lin',
                         style=tab_style,
                         selected_style=tab_selected_style),
-                # dcc.Tab(children=norm_tab,
-                #         label='Logistic',
-                #         value='tab-log',
-                #         style=tab_style,
-                #         selected_style=tab_selected_style),
+                dcc.Tab(children=log_tab,
+                        label='Logistic',
+                        value='tab-log',
+                        style=tab_style,
+                        selected_style=tab_selected_style),
                 # dcc.Tab(children=corr_tab,
                 #         label='Bayesian',
                 #         value='tab-bay',
@@ -1206,6 +1272,7 @@ def update_para(test, var1, var2):
         df_para = df
     else:
         df_para = df_up
+
     if test == "Student t-test" and var1 is not None and var2 is not None:
         stat, p = ttest_ind(df_para[var1], df_para[var2])
         df_sub = df_para[[' index', var1, var2]]
@@ -1260,79 +1327,184 @@ def update_labs(n):
     [Output('lin-mod-tab1', "children"),
      Output('lin-mod-tab3', "children"),
      Output('lin-mod-tab2', "children")],
-    [Input('lin-type', "value"),
-     Input('lin-pre', "value"),
+    [Input('lin-pre', "value"),
      Input('lin-tar', "value"),
      Input('run-button-lin', "n_clicks")])
-def run_lin(mod_type, predictors, target, run):
-    if run :
-        if mod_type == "Regression":
-            # X = df[predictors].values.tolist()
-            # y = df[target].values.tolist()
-            # model = sm.OLS(y, X).fit()
+def run_lin(predictors, target, run):
+    if df_up.empty:
+        df_lin = df
+    else:
+        df_lin = df_up
 
-            pred_str = ' + '.join(map(str, predictors))
-            formula = ' ~ '.join([target, pred_str])
+    if run:
+        pred_str = ' + '.join(map(str, predictors))
+        formula = ' ~ '.join([target, pred_str])
 
-            model = smf.ols(formula=formula, data=df).fit()
+        model = smf.ols(formula=formula, data=df_lin).fit()
 
-            # predictions = model.predict(X)
-            results_as_html = model.summary().tables[0].as_html()
-            results_as_html2 = model.summary().tables[2].as_html()
-            results_as_html3 = model.summary().tables[1].as_html()
-            df_summ = pd.read_html(results_as_html, header=0)[0]
-            df_summ2 = pd.read_html(results_as_html2, header=0)[0]
-            df_summ3 = pd.read_html(results_as_html3, header=0)[0]
+        # predictions = model.predict(X)
+        results_as_html = model.summary().tables[0].as_html()
+        results_as_html2 = model.summary().tables[2].as_html()
+        results_as_html3 = model.summary().tables[1].as_html()
+        df_summ = pd.read_html(results_as_html, header=0)[0]
+        df_summ2 = pd.read_html(results_as_html2, header=0)[0]
+        df_summ3 = pd.read_html(results_as_html3, header=0)[0]
 
-            return [html.Div([
+        return [html.Div([
+            dash_table.DataTable(
+                id='table1',
+                columns=[{"name": i, "id": i} for i in df_summ.columns],
+                data=df_summ.to_dict("rows"),
+                style_header={
+                    'backgroundColor': 'white'
+                },
+                style_header_conditional=[
+                    {'if': {'column_id': 'Dep. Variable:'},
+                     'backgroundColor': '#DCDCDC'},
+                    {'if': {'column_id': 'R-squared (uncentered):'},
+                     'backgroundColor': '#DCDCDC'},
+                    {'if': {'column_id': 'R-squared:'},
+                     'backgroundColor': '#DCDCDC'}
+                ],
+                style_data_conditional=[
+                    {'if': {'column_id': 'Dep. Variable:'},
+                     'backgroundColor': '#DCDCDC'},
+                    {'if': {'column_id': 'R-squared (uncentered):'},
+                     'backgroundColor': '#DCDCDC'},
+                    {'if': {'column_id': 'R-squared:'},
+                     'backgroundColor': '#DCDCDC'}
+                ])
+        ]),
+            html.Div([
                 dash_table.DataTable(
                     id='table1',
-                    columns=[{"name": i, "id": i} for i in df_summ.columns],
-                    data=df_summ.to_dict("rows"),
+                    columns=[{"name": i, "id": i} for i in df_summ3.columns],
+                    data=df_summ3.to_dict("rows"),
                     style_header={
-                        'backgroundColor': 'white'
-                    },
+                        'backgroundColor': '#DCDCDC'})
+            ]),
+            html.Div([
+                dash_table.DataTable(
+                    id='table2',
+                    columns=[{"name": i, "id": i} for i in df_summ2.columns],
+                    data=df_summ2.to_dict("rows"),
+                    style_header={
+                        'backgroundColor': 'white'},
                     style_header_conditional=[
-                        {'if': {'column_id': 'Dep. Variable:'},
+                        {'if': {'column_id': 'Omnibus:'},
                          'backgroundColor': '#DCDCDC'},
-                        {'if': {'column_id': 'R-squared (uncentered):'},
+                        {'if': {'column_id': 'Durbin-Watson:'},
                          'backgroundColor': '#DCDCDC'}
                     ],
                     style_data_conditional=[
-                        {'if': {'column_id': 'Dep. Variable:'},
+                        {'if': {'column_id': 'Omnibus:'},
                          'backgroundColor': '#DCDCDC'},
-                        {'if': {'column_id': 'R-squared (uncentered):'},
-                         'backgroundColor': '#DCDCDC'}])
-                ]),
-                html.Div([
-                    dash_table.DataTable(
-                        id='table1',
-                        columns=[{"name": i, "id": i} for i in df_summ3.columns],
-                        data=df_summ3.to_dict("rows"),
-                        style_header={
-                            'backgroundColor': '#DCDCDC'})
-                ]),
-                html.Div([
-                    dash_table.DataTable(
-                        id='table2',
-                        columns=[{"name": i, "id": i} for i in df_summ2.columns],
-                        data=df_summ2.to_dict("rows"),
-                        style_header={
-                            'backgroundColor': 'white'},
-                        style_header_conditional=[
-                            {'if': {'column_id': 'Omnibus:'},
-                             'backgroundColor': '#DCDCDC'},
-                            {'if': {'column_id': 'Durbin-Watson:'},
-                             'backgroundColor': '#DCDCDC'}
-                        ],
-                        style_data_conditional=[
-                            {'if': {'column_id': 'Omnibus:'},
-                             'backgroundColor': '#DCDCDC'},
-                            {'if': {'column_id': 'Durbin-Watson:'},
-                             'backgroundColor': '#DCDCDC'}]
-                    )
-                ])
-            ]
+                        {'if': {'column_id': 'Durbin-Watson:'},
+                         'backgroundColor': '#DCDCDC'}]
+                )
+            ])
+        ]
+
+
+@app.callback(
+    [Output('lin-pre', 'options'),
+     Output('lin-tar', 'options'),
+     Output('load-button-lin', 'disabled')],
+    [Input('load-button-lin', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                True]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options]]
+
+
+@app.callback(
+    [Output('log-mod-tab1', "children"),
+     Output('log-mod-tab2', "children")],
+    [Input('log-pre', "value"),
+     Input('log-tar', "value"),
+     Input('run-button-log', "n_clicks")])
+def run_log(predictors, target, run):
+    if df_up.empty:
+        df_log = df
+    else:
+        df_log = df_up
+    if run:
+        # X = df[predictors].values.tolist()
+        # y = df[target].values.tolist()
+        # model = sm.OLS(y, X).fit()
+
+        if "object" in str(df_log[[target]].dtypes):
+            df_log[target] = pd.Categorical(df_log[target])
+            df_log[target] = df_log[target].cat.codes
+
+        min_max_scaler = preprocessing.MinMaxScaler()
+        df_log[[target]] = min_max_scaler.fit_transform(df_log[[target]])
+
+        pred_str = ' + '.join(map(str, predictors))
+        formula = ' ~ '.join([target, pred_str])
+
+        model = smf.logit(formula=formula, data=df_log).fit()
+
+        # predictions = model.predict(X)
+        results_as_html = model.summary().tables[0].as_html()
+        results_as_html2 = model.summary().tables[1].as_html()
+        df_summ = pd.read_html(results_as_html, header=0)[0]
+        df_summ2 = pd.read_html(results_as_html2, header=0)[0]
+
+        return [html.Div([
+            dash_table.DataTable(
+                id='table1',
+                columns=[{"name": i, "id": i} for i in df_summ.columns],
+                data=df_summ.to_dict("rows"),
+                style_header={
+                    'backgroundColor': 'white'
+                },
+                style_header_conditional=[
+                    {'if': {'column_id': 'Dep. Variable:'},
+                     'backgroundColor': '#DCDCDC'},
+                    {'if': {'column_id': 'No. Observations:'},
+                     'backgroundColor': '#DCDCDC'}
+                ],
+                style_data_conditional=[
+                    {'if': {'column_id': 'Dep. Variable:'},
+                     'backgroundColor': '#DCDCDC'},
+                    {'if': {'column_id': 'No. Observations:'},
+                     'backgroundColor': '#DCDCDC'}])
+        ]),
+            html.Div([
+                dash_table.DataTable(
+                    id='table2',
+                    columns=[{"name": i, "id": i} for i in df_summ2.columns],
+                    data=df_summ2.to_dict("rows"),
+                    style_header={
+                        'backgroundColor': '#DCDCDC'
+                    },
+                    style_header_conditional=[
+                        {'if': {'column_id': 'Unnamed: 0'},
+                         'backgroundColor': '#DCDCDC'},
+                    ],
+                )
+            ])
+        ]
+
+
+@app.callback(
+    [Output('log-pre', 'options'),
+     Output('log-tar', 'options'),
+     Output('load-button-log', 'disabled')],
+    [Input('load-button-log', 'n_clicks')])
+def update_labs(n):
+    if n is not None:
+        return [[{'label': i, 'value': i} for i in colnames],
+                [{'label': i, 'value': i} for i in colnames],
+                True]
+    else:
+        return [[{'label': i, 'value': i} for i in col_options],
+                [{'label': i, 'value': i} for i in col_options]]
 
 
 app.run_server(debug=False)
