@@ -1511,4 +1511,6 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in col_options]]
 
 
-app.server.run(debug=True, threaded=True)
+# Run the Dash app
+if __name__ == '__main__':
+    app.server.run(debug=True, threaded=True)
