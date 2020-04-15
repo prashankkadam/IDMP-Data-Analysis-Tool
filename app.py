@@ -2,6 +2,7 @@ import base64
 import io
 import plotly.express as px
 import dash
+import flask
 import dash_html_components as html
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
@@ -71,10 +72,13 @@ tab_selected_style = {
     'padding': '6px'
 }
 
+server = flask.Flask(__name__)
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 app = dash.Dash(
-    __name__, external_stylesheets=external_stylesheets
+    __name__,
+    server=server,
+    external_stylesheets=external_stylesheets
 )
 
 app.config.suppress_callback_exceptions = True
@@ -1507,4 +1511,4 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in col_options]]
 
 
-app.run_server(debug=False)
+app.server.run(debug=True, threaded=True)
