@@ -909,6 +909,8 @@ def output_text(value, n):
         if not df_up.empty:
             global colnames
             colnames = df_up.columns
+            global col_options
+            col_options = df_up.columns
         return df_up.to_json(date_format='iso', orient='split')
 
 
@@ -1087,10 +1089,9 @@ def update_labs(n):
     [Input("xlab-bar", "value"),
      Input("ylab-bar", "value"),
      Input("col-bar", "value"),
-     Input("typ-bar", "value"),
      Input("fac-bar-row", "value"),
      Input("fac-bar-col", "value")])
-def update_bar(x, y, color, type, facet_row, facet_col):
+def update_bar(x, y, color, facet_row, facet_col):
     """
     This is a callback function to update the bar plot based on the values
     choosen by the user from the dropdown
@@ -1899,5 +1900,5 @@ def update_labs(n):
 
 # Finally we run the app on our flask server
 if __name__ == '__main__':
-    app.server.run(debug=True, threaded=True)
+    app.server.run(debug=True)
 ########################################################################################################################
