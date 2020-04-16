@@ -199,6 +199,7 @@ app.layout = html.Div([
     html.Div(id='page-content')  # routed page content
 ])
 
+
 ########################################################################################################################
 
 
@@ -474,7 +475,6 @@ heat_tab = dbc.Card(
     ]),
     className="mt-3",
 )
-
 
 # Putting all the above defined layouts into a tab layout
 tab_plot_content = dbc.Card(
@@ -874,7 +874,6 @@ tab_mod_content = dbc.Card(
     className="mt-3",
 )
 
-
 ########################################################################################################################
 """
 Now we define the callbacks for the all the components defined in the above layouts
@@ -993,6 +992,7 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, data
             page_current * page_size:(page_current + 1) * page_size
             ].to_dict('records'),
             [{"name": [i, j], "id": i} for i, j in zip(df_tab.columns, [str(x) for x in df_tab.dtypes.to_list()])]]
+
 
 ########################################################################################################################
 
@@ -1305,6 +1305,7 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
 
+
 ########################################################################################################################
 
 
@@ -1493,7 +1494,7 @@ def update_corr(test, var1, var2):
         else:
             result1 = 'Probably dependent : stat=%.3f, p=%.3f' % (stat, p)
             return fig, result1
-    
+
     # Intuitively, the Kendall correlation between two variables will be high when observations
     # have a similar (or identical for a correlation of 1) rank (i.e. relative position label
     # of the observations within the variable: 1st, 2nd, 3rd, etc.) between the two variables,
@@ -1650,6 +1651,7 @@ def update_labs(n):
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
 
+
 ########################################################################################################################
 
 
@@ -1679,7 +1681,6 @@ def run_lin(predictors, target, run):
     # If the run button click count is greater than 0 we execute the following
     # code
     if run:
-
         # Creating a R type formula out of the prodictors and target
         pred_str = ' + '.join(map(str, predictors))
         formula = ' ~ '.join([target, pred_str])
@@ -1697,31 +1698,32 @@ def run_lin(predictors, target, run):
         df_summ2 = pd.read_html(results_as_html2, header=0)[0]
         df_summ3 = pd.read_html(results_as_html3, header=0)[0]
 
-        return [html.Div([
-            dash_table.DataTable(
-                id='table1',
-                columns=[{"name": i, "id": i} for i in df_summ.columns],
-                data=df_summ.to_dict("rows"),
-                style_header={
-                    'backgroundColor': 'white'
-                },
-                style_header_conditional=[
-                    {'if': {'column_id': 'Dep. Variable:'},
-                     'backgroundColor': '#DCDCDC'},
-                    {'if': {'column_id': 'R-squared (uncentered):'},
-                     'backgroundColor': '#DCDCDC'},
-                    {'if': {'column_id': 'R-squared:'},
-                     'backgroundColor': '#DCDCDC'}
-                ],
-                style_data_conditional=[
-                    {'if': {'column_id': 'Dep. Variable:'},
-                     'backgroundColor': '#DCDCDC'},
-                    {'if': {'column_id': 'R-squared (uncentered):'},
-                     'backgroundColor': '#DCDCDC'},
-                    {'if': {'column_id': 'R-squared:'},
-                     'backgroundColor': '#DCDCDC'}
-                ])
-        ]),
+        return [
+            html.Div([
+                dash_table.DataTable(
+                    id='table1',
+                    columns=[{"name": i, "id": i} for i in df_summ.columns],
+                    data=df_summ.to_dict("rows"),
+                    style_header={
+                        'backgroundColor': 'white'
+                    },
+                    style_header_conditional=[
+                        {'if': {'column_id': 'Dep. Variable:'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'R-squared (uncentered):'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'R-squared:'},
+                         'backgroundColor': '#DCDCDC'}
+                    ],
+                    style_data_conditional=[
+                        {'if': {'column_id': 'Dep. Variable:'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'R-squared (uncentered):'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'R-squared:'},
+                         'backgroundColor': '#DCDCDC'}
+                    ])
+            ]),
             html.Div([
                 dash_table.DataTable(
                     id='table1',
@@ -1833,26 +1835,27 @@ def run_log(predictors, target, run):
         df_summ = pd.read_html(results_as_html, header=0)[0]
         df_summ2 = pd.read_html(results_as_html2, header=0)[0]
 
-        return [html.Div([
-            dash_table.DataTable(
-                id='table1',
-                columns=[{"name": i, "id": i} for i in df_summ.columns],
-                data=df_summ.to_dict("rows"),
-                style_header={
-                    'backgroundColor': 'white'
-                },
-                style_header_conditional=[
-                    {'if': {'column_id': 'Dep. Variable:'},
-                     'backgroundColor': '#DCDCDC'},
-                    {'if': {'column_id': 'No. Observations:'},
-                     'backgroundColor': '#DCDCDC'}
-                ],
-                style_data_conditional=[
-                    {'if': {'column_id': 'Dep. Variable:'},
-                     'backgroundColor': '#DCDCDC'},
-                    {'if': {'column_id': 'No. Observations:'},
-                     'backgroundColor': '#DCDCDC'}])
-        ]),
+        return [
+            html.Div([
+                dash_table.DataTable(
+                    id='table1',
+                    columns=[{"name": i, "id": i} for i in df_summ.columns],
+                    data=df_summ.to_dict("rows"),
+                    style_header={
+                        'backgroundColor': 'white'
+                    },
+                    style_header_conditional=[
+                        {'if': {'column_id': 'Dep. Variable:'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'No. Observations:'},
+                         'backgroundColor': '#DCDCDC'}
+                    ],
+                    style_data_conditional=[
+                        {'if': {'column_id': 'Dep. Variable:'},
+                         'backgroundColor': '#DCDCDC'},
+                        {'if': {'column_id': 'No. Observations:'},
+                         'backgroundColor': '#DCDCDC'}])
+            ]),
             html.Div([
                 dash_table.DataTable(
                     id='table2',
@@ -1894,6 +1897,7 @@ def update_labs(n):
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
+
 
 ########################################################################################################################
 
