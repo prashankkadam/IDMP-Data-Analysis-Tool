@@ -2,7 +2,7 @@
 
 Data Analysis tool for IMDP course (DS5110)
 
-Check out the app at -> https://idmp-data-tool.herokuapp.com/
+Check out the app at -> https://idmp-data-tool.herokuapp.com/ (Note that, due to the app running on free infrastructure, the response time on the web-tool will be high)
 
 1. Ananlyze, filter, rearrange the uploaded data in an easy to view format:
 
