@@ -16,6 +16,7 @@ modeling. In the v1.0 modeling only consists of Linear and
 Logistic regression further versions will have more complex
 modeling algorithms
 """
+########################################################################################################################
 # Importing the required libraries
 
 import base64  # for image conversion
@@ -41,6 +42,7 @@ from scipy.stats import shapiro, normaltest, anderson, \
     pearsonr, spearmanr, kendalltau, chi2_contingency, \
     ttest_ind, ttest_rel, f_oneway  # for hypothesis testing
 
+########################################################################################################################
 # package lxml required
 # Statmodels installation required for trendline
 
@@ -105,6 +107,8 @@ tab_selected_style = {
     'padding': '6px'
 }
 
+########################################################################################################################
+
 # This app will be deployed on a flask server
 # Declaring the flask server
 server = flask.Flask(__name__)
@@ -123,6 +127,8 @@ app = dash.Dash(
 # exceptions can be generated. Inorder to suppress those exceptions
 # during runtime, we use the following code
 app.config.suppress_callback_exceptions = True
+
+########################################################################################################################
 
 # Fetching the logo image
 IDMP_LOGO = 'idmp_logo.png'
@@ -192,6 +198,8 @@ app.layout = html.Div([
     dcc.Location(id='url', refresh=False),  # url routes
     html.Div(id='page-content')  # routed page content
 ])
+
+########################################################################################################################
 
 
 # Callback for page routing
@@ -984,6 +992,8 @@ def update_table(page_current, page_size, sort_by, filter, row_count_value, data
             ].to_dict('records'),
             [{"name": [i, j], "id": i} for i, j in zip(df_tab.columns, [str(x) for x in df_tab.dtypes.to_list()])]]
 
+########################################################################################################################
+
 
 @app.callback(
     Output("plot-scatter", "figure"),
@@ -1294,6 +1304,8 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
 
+########################################################################################################################
+
 
 @app.callback(
     [Output("plot-norm", "figure"),
@@ -1538,9 +1550,6 @@ def update_labs(n):
                 [{'label': i, 'value': i} for i in col_options]]
 
 
-########################################################################################################################
-
-
 @app.callback(
     [Output("plot-para", "figure"),
      Output("para-val1", "children")],
@@ -1639,6 +1648,8 @@ def update_labs(n):
     else:
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
+
+########################################################################################################################
 
 
 @app.callback(
@@ -1883,7 +1894,10 @@ def update_labs(n):
         return [[{'label': i, 'value': i} for i in col_options],
                 [{'label': i, 'value': i} for i in col_options]]
 
+########################################################################################################################
+
 
 # Finally we run the app on our flask server
 if __name__ == '__main__':
     app.server.run(debug=True, threaded=True)
+########################################################################################################################
