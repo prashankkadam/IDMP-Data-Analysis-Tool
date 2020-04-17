@@ -1681,6 +1681,20 @@ def run_lin(predictors, target, run):
     # If the run button click count is greater than 0 we execute the following
     # code
     if run:
+
+        # The statsmodel package does not accept a categorical variable as target
+        # for a logistic regression so we need to encode the target column (if categorical)
+        # into numeric values and then run the regression
+        # Checking if the data type of the target is object. If yes, we convert it to
+        # categorical and encode it to numbers
+        if "object" in str(df_lin[[target]].dtypes):
+            df_lin[target] = pd.Categorical(df_lin[target])
+            df_lin[target] = df_lin[target].cat.codes
+
+        # Now we normalize the target such that all the elements lie between 0 and 1
+        min_max_scaler = preprocessing.MinMaxScaler()
+        df_lin[[target]] = min_max_scaler.fit_transform(df_lin[[target]])
+
         # Creating a R type formula out of the prodictors and target
         pred_str = ' + '.join(map(str, predictors))
         formula = ' ~ '.join([target, pred_str])
