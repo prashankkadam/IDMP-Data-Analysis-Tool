@@ -231,41 +231,41 @@ Here we define the layout for our first page which is the data table page
 """
 tab_data_content = dbc.Card(
     dbc.CardBody([
-        html.Div([
-            # dcc.Upload(
-            #     id='upload-data',
-            #     children=html.Div([
-            #         'Drag and Drop or ',
-            #         html.A('Select Files')
-            #     ]),
-            #     style={
-            #         'width': '100%',
-            #         'height': '60px',
-            #         'lineHeight': '60px',
-            #         'borderWidth': '1px',
-            #         'borderStyle': 'dashed',
-            #         'borderRadius': '5px',
-            #         'textAlign': 'center',
-            #         'margin': '10px'
-            #     },
-            #     # Allow multiple files to be uploaded
-            #     multiple=True
-            # ),
-
-            # Layout for entering the URL of externally added data sets
-            html.Div([
-                html.P([dbc.Input(id="input-url", placeholder="Enter data URL", type="text")])
-            ], style={"width": "89%", "float": "left"}),
-            # Load Button on the data table page
-            dbc.Button("Load",
-                       id="load-button",
-                       color="info",
-                       className="mr-2",
-                       style={"width": "10%",
-                              "display": "inline-block"}),
-            html.H2(id='data-name', style={"width": "99%", "float": "left"}),
-            html.Div(id='no-data', style={'display': 'none'})
-        ]),
+        # html.Div([
+        #     # dcc.Upload(
+        #     #     id='upload-data',
+        #     #     children=html.Div([
+        #     #         'Drag and Drop or ',
+        #     #         html.A('Select Files')
+        #     #     ]),
+        #     #     style={
+        #     #         'width': '100%',
+        #     #         'height': '60px',
+        #     #         'lineHeight': '60px',
+        #     #         'borderWidth': '1px',
+        #     #         'borderStyle': 'dashed',
+        #     #         'borderRadius': '5px',
+        #     #         'textAlign': 'center',
+        #     #         'margin': '10px'
+        #     #     },
+        #     #     # Allow multiple files to be uploaded
+        #     #     multiple=True
+        #     # ),
+        #
+        #     # Layout for entering the URL of externally added data sets
+        #     html.Div([
+        #         html.P([dbc.Input(id="input-url", placeholder="Enter data URL", type="text")])
+        #     ], style={"width": "89%", "float": "left"}),
+        #     # Load Button on the data table page
+        #     dbc.Button("Load",
+        #                id="load-button",
+        #                color="info",
+        #                className="mr-2",
+        #                style={"width": "10%",
+        #                       "display": "inline-block"}),
+        #     html.H2(id='data-name', style={"width": "99%", "float": "left"}),
+        #     html.Div(id='no-data', style={'display': 'none'})
+        # ]),
         # Setting the data table layout
         dash_table.DataTable(
             id='datatable',
@@ -290,7 +290,7 @@ tab_data_content = dbc.Card(
         # Layout for row count indicator
         html.P(["Row Count" + ":", dcc.Input(id="datatable-row-count",
                                              type='number',
-                                             value=10)],
+                                             value=15)],
                style={"display": "inline-block", 'fontSize': 12}),
     ]),
     className="mt-3",
@@ -882,35 +882,35 @@ constraints chosen by the user from the drop down or other input fields
 """
 
 
-@app.callback(
-    Output("no-data", "children"),
-    [Input("input-url", "value"),
-     Input("load-button", "n_clicks")])
-def output_text(value, n):
-    """
-    This is a callback function that reads the data from the input URL
-    :param value: input URL string
-    :param n: button clicks
-    :return: dataframe converted to json format
-    """
-    if value is not None and n is not None:
-
-        # Updating the value of uploaded dataframe globally
-        global df_up
-
-        # Reading the data into a dataframe from the given url
-        df_up = pd.read_csv(value)
-        # Inserting the index column into the dataframe
-        df_up.insert(loc=0, column=' index', value=range(1, len(df_up) + 1))
-        # data_name = value.split('/')[-1].split('.')[0]
-
-        # Setting new column names based on uploaded dataframe columns
-        if not df_up.empty:
-            global colnames
-            colnames = df_up.columns
-            global col_options
-            col_options = df_up.columns
-        return df_up.to_json(date_format='iso', orient='split')
+# @app.callback(
+#     Output("no-data", "children"),
+#     [Input("input-url", "value"),
+#      Input("load-button", "n_clicks")])
+# def output_text(value, n):
+#     """
+#     This is a callback function that reads the data from the input URL
+#     :param value: input URL string
+#     :param n: button clicks
+#     :return: dataframe converted to json format
+#     """
+#     if value is not None and n is not None:
+#
+#         # Updating the value of uploaded dataframe globally
+#         global df_up
+#
+#         # Reading the data into a dataframe from the given url
+#         df_up = pd.read_csv(value)
+#         # Inserting the index column into the dataframe
+#         df_up.insert(loc=0, column=' index', value=range(1, len(df_up) + 1))
+#         # data_name = value.split('/')[-1].split('.')[0]
+#
+#         # Setting new column names based on uploaded dataframe columns
+#         if not df_up.empty:
+#             global colnames
+#             colnames = df_up.columns
+#             global col_options
+#             col_options = df_up.columns
+#         return df_up.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
@@ -920,9 +920,8 @@ def output_text(value, n):
      Input('datatable', "page_size"),
      Input('datatable', 'sort_by'),
      Input('datatable', "filter_query"),
-     Input('datatable-row-count', 'value'),
-     Input('no-data', 'children')])
-def update_table(page_current, page_size, sort_by, filter, row_count_value, data):
+     Input('datatable-row-count', 'value')])      # Input('no-data', 'children') -> Add for upload button
+def update_table(page_current, page_size, sort_by, filter, row_count_value):
     """
     This is the collback function to update the datatable
     with the required filtered, sorted, extended values
