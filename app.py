@@ -267,6 +267,9 @@ tab_data_content = dbc.Card(
         #     html.Div(id='no-data', style={'display': 'none'})
         # ]),
         # Setting the data table layout
+        html.Div(["Breast Cancer Dataset"], 
+                 style={'padding-top': '10px', 'padding-left': '50px','font-weight': 'bold', 
+                        'line-height': '30px','font-size': '20px'})),
         dash_table.DataTable(
             id='datatable',
             columns=[
